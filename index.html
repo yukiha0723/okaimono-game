@@ -884,8 +884,16 @@ function renderMarket() {
       <div class="basket-bar">かごのなか: <span id="basket-status">まだなにもない</span></div>`;
   }
   // reminder
-  document.getElementById('reminder-bar').innerHTML = '📋 ' +
-    S.list.map(({product:p})=>`<span class="reminder-item ${coll.has(p.id)?'done':'pending'}">${p.emoji}${p.name}</span>`).join('');
+  if (S.mode === 'hell') {
+    // じごく：品物名・絵文字は隠して個数だけわかるように
+    const remain = S.list.length - S.basket.length;
+    document.getElementById('reminder-bar').innerHTML = '📋 ' +
+      S.list.map(({product:p})=>`<span class="reminder-item ${coll.has(p.id)?'done':'pending'}" style="font-size:1.4em">${coll.has(p.id)?'✅':'❓'}</span>`).join(' ') +
+      ` <span style="font-weight:800;color:#666;margin-left:6px">あと${remain}こ</span>`;
+  } else {
+    document.getElementById('reminder-bar').innerHTML = '📋 ' +
+      S.list.map(({product:p})=>`<span class="reminder-item ${coll.has(p.id)?'done':'pending'}">${p.emoji}${p.name}</span>`).join('');
+  }
   // grid — no highlighting for needed items
   document.getElementById('market-grid').innerHTML = S.marketItems.map(p=>{
     const done = coll.has(p.id);
