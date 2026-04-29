@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>おかいものゲーム 🛒</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'M PLUS Rounded 1c','Hiragino Maru Gothic Pro',sans-serif;
+  background: #FFF3E0; display: flex; justify-content: center; min-height: 100vh;
+}
+#game { width: 100%; max-width: 480px; min-height: 100vh; background: white; overflow-x: hidden; }
+.screen { display: none; flex-direction: column; min-height: 100vh; padding: 20px; }
+.screen.active { display: flex; }
+
+/* BUTTONS */
+.btn {
+  background: #FF6B35; color: white; border: none; border-radius: 50px;
+  padding: 15px 30px; font-size: 1.1em; font-weight: 800; font-family: inherit;
+  cursor: pointer; box-shadow: 0 5px 0 #CC4400;
+  transition: transform .1s, box-shadow .1s; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: translateY(5px); box-shadow: none; }
+.btn-blue   { background: #4ECDC4; box-shadow: 0 5px 0 #2BA39A; }
+.btn-green  { background: #56C870; box-shadow: 0 5px 0 #3A9E52; }
+.btn-gray   { background: #AAAAAA; box-shadow: 0 5px 0 #888; }
+.btn-purple { background: #9C6FDE; box-shadow: 0 5px 0 #7248B8; }
+.btn-red    { background: #E53935; box-shadow: 0 5px 0 #B71C1C; }
+.btn-pink   { background: #FF80AB; box-shadow: 0 5px 0 #C94F7C; }
+
+/* TITLE */
+#screen-title {
+  background: linear-gradient(160deg,#FFD93D,#FF6B35);
+  align-items: center; justify-content: center; text-align: center; gap: 16px;
+}
+.title-cart { font-size: 90px; animation: bounce 1.2s ease-in-out infinite; display: block; }
+@keyframes bounce { 0%,100%{transform:translateY(0) rotate(-5deg);} 50%{transform:translateY(-18px) rotate(5deg);} }
+#screen-title h1 { color: white; font-size: 2.4em; font-weight: 800; text-shadow: 3px 4px 0 rgba(0,0,0,.15); }
+#screen-title .subtitle { color: rgba(255,255,255,.9); font-size: 1em; font-weight: 700; }
+.difficulty-btns { display: flex; gap: 10px; flex-direction: column; width: 100%; max-width: 270px; }
+
+/* SECTION HEADERS */
+.section-header { margin: -20px -20px 20px; padding: 20px; color: white; text-align: center; }
+.section-header h2 { font-size: 1.4em; font-weight: 800; }
+.section-header p  { font-size: .85em; opacity: .9; margin-top: 4px; }
+.header-mission  { background: linear-gradient(135deg,#4ECDC4,#3AAFA6); }
+.header-wallet   { background: linear-gradient(135deg,#FFB300,#FF8F00); }
+.header-market   { background: linear-gradient(135deg,#43A047,#2E7D32); }
+.header-register { background: linear-gradient(135deg,#E53935,#B71C1C); }
+.header-change   { background: linear-gradient(135deg,#3949AB,#1A237E); }
+
+/* MISSION */
+#screen-mission { background: #F0F9FF; }
+.shopping-list-card { background: white; border-radius: 20px; padding: 18px; box-shadow: 0 6px 24px rgba(0,0,0,.1); }
+.list-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 2px dashed #EEE; gap: 12px; }
+.list-item:last-child { border-bottom: none; }
+.list-emoji  { font-size: 2.2em; width: 48px; text-align: center; }
+.list-name   { flex: 1; font-size: 1.1em; font-weight: 700; }
+.list-detail { font-size: .8em; color: #888; }
+.list-price  { font-size: 1.1em; color: #FF6B35; font-weight: 800; }
+.total-card {
+  background: #FFF3CD; border: 3px solid #FFD93D; border-radius: 16px;
+  padding: 14px 18px; margin-top: 15px; display: flex;
+  justify-content: space-between; align-items: center; font-size: 1.2em; font-weight: 800;
+}
+.total-amount { color: #FF6B35; font-size: 1.3em; }
+
+/* WALLET */
+#screen-wallet { background: #FFF8E1; }
+.currency-section { margin-bottom: 12px; }
+.currency-section-title { font-size: .85em; font-weight: 700; color: #888; margin-bottom: 8px; letter-spacing: 1px; }
+.coins-row,.bills-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.coin-btn,.bill-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; background: none; border: none; font-family: inherit;
+  -webkit-tap-highlight-color: transparent; transition: transform .1s;
+}
+.coin-btn:active { transform: scale(.85); }
+.bill-btn:active { transform: scale(.9); }
+.coin-circle {
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; border: 4px solid; position: relative; user-select: none;
+}
+.coin-circle.sz-sm { width: 48px; height: 48px; font-size: .7em; }
+.coin-circle.sz-md { width: 56px; height: 56px; font-size: .75em; }
+.coin-circle.sz-lg { width: 62px; height: 62px; font-size: .8em; }
+.coin-1   { background:#E8E8E8; border-color:#BDBDBD; color:#757575; }
+.coin-5   { background:linear-gradient(135deg,#FFD700,#DAA520); border-color:#B8860B; color:#5D4037; }
+.coin-10  { background:linear-gradient(135deg,#CD853F,#A0522D); border-color:#7B3F00; color:white; }
+.coin-50  { background:linear-gradient(135deg,#D0D0D0,#A8A8A8); border-color:#909090; color:#333; }
+.coin-100 { background:linear-gradient(135deg,#F0F0F0,#D0D0D0); border-color:#AAAAAA; color:#444; }
+.coin-500 { background:linear-gradient(135deg,#FFD700,#FFA500); border-color:#CC8800; color:#5D1A00; }
+.coin-hole::after { content:''; position:absolute; width:14px; height:14px; border-radius:50%; background:rgba(255,255,255,.6); border:2px solid rgba(0,0,0,.1); }
+.coin-label,.bill-label { font-size: .75em; font-weight: 700; color: #666; }
+.bill-rect {
+  border-radius: 8px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; font-weight: 800; border: 3px solid;
+  width: 88px; height: 50px; font-size: .8em; user-select: none; line-height: 1.3;
+}
+.bill-1000  { background:linear-gradient(135deg,#B3E5FC,#81D4FA); border-color:#0277BD; color:#01579B; }
+.bill-5000  { background:linear-gradient(135deg,#E1BEE7,#CE93D8); border-color:#6A1B9A; color:#4A148C; }
+.bill-10000 { background:linear-gradient(135deg,#FFF9C4,#FFF176); border-color:#F9A825; color:#E65100; }
+.wallet-box { background:white; border-radius:16px; padding:14px; box-shadow:inset 0 3px 10px rgba(0,0,0,.08); min-height:80px; margin-bottom:12px; }
+.wallet-box-title { font-size:.82em; color:#999; margin-bottom:8px; font-weight:700; }
+.wallet-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.wallet-chip { background:#F5F5F5; border:2px solid #DDD; border-radius:30px; padding:5px 12px; font-size:.82em; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; user-select:none; }
+.wallet-chip:hover { background:#FFE5DE; border-color:#FF6B35; color:#FF6B35; }
+.wallet-total { text-align:right; font-size:1.05em; font-weight:800; margin-top:8px; color:#FF6B35; }
+.wallet-total.enough { color:#56C870; }
+.wallet-hint { font-size:.82em; color:#888; margin-bottom:10px; }
+
+/* CORNERS */
+#screen-corners { background: #E8F5E9; }
+.corners-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:14px; }
+.corner-card {
+  background:white; border-radius:18px; padding:18px 12px; text-align:center;
+  cursor:pointer; border:3px solid transparent; box-shadow:0 4px 14px rgba(0,0,0,.1);
+  transition:transform .15s,box-shadow .15s; position:relative;
+  user-select:none; -webkit-tap-highlight-color:transparent;
+}
+.corner-card:active { transform:scale(.95); box-shadow:0 2px 6px rgba(0,0,0,.08); }
+.corner-card.corner-done { border-color:#56C870; background:#F1FBF4; }
+.corner-emoji { font-size:2.8em; }
+.corner-name  { font-size:.78em; font-weight:700; margin-top:6px; color:#555; line-height:1.3; }
+.corner-badge {
+  position:absolute; top:-6px; right:-6px; background:#FF6B35; color:white;
+  border-radius:50%; width:24px; height:24px; font-size:.8em; font-weight:800;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.corner-badge-done { background:#56C870; }
+.basket-bar { background:rgba(255,255,255,.25); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:.88em; color:white; font-weight:700; }
+
+/* MARKET */
+#screen-market { background:#E8F5E9; padding-bottom:30px; }
+.market-back-btn {
+  display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.2);
+  border:none; color:white; font-family:inherit; font-size:.85em; font-weight:700;
+  border-radius:20px; padding:6px 14px; cursor:pointer; margin-bottom:6px;
+}
+.market-corner-title { font-size:1em; font-weight:800; }
+.reminder-bar { background:white; border-radius:12px; padding:10px 14px; margin-bottom:12px; font-size:.88em; box-shadow:0 2px 8px rgba(0,0,0,.08); line-height:1.8; }
+.reminder-item { display:inline-block; margin-right:10px; }
+.reminder-item.done    { text-decoration:line-through; opacity:.5; }
+.reminder-item.pending { font-weight:700; color:#E64A19; }
+.market-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.market-item {
+  background:white; border-radius:14px; padding:12px 6px 10px; text-align:center;
+  cursor:pointer; border:3px solid transparent;
+  transition:transform .15s,box-shadow .2s; box-shadow:0 2px 8px rgba(0,0,0,.08);
+  user-select:none; -webkit-tap-highlight-color:transparent;
+}
+.market-item:active   { transform:scale(.93); }
+.market-item.collected { border-color:#56C870; background:#E8F5E9; }
+.market-item.wrong    { animation:shake .35s ease; }
+.market-emoji  { font-size:2.4em; }
+.market-name   { font-size:.72em; font-weight:700; margin-top:4px; color:#444; }
+.market-price  { font-size:.72em; color:#FF6B35; font-weight:700; }
+.collected-check { font-size:2em; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px);} 60%{transform:translateX(7px);} 80%{transform:translateX(-4px);} }
+#to-register-btn { margin-top:14px; width:100%; display:none; }
+
+/* REGISTER */
+#screen-register { background:#FBE9E7; }
+.receipt-card { background:white; border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.1); font-family:monospace; font-size:.9em; }
+.receipt-title    { text-align:center; font-weight:800; font-family:inherit; margin-bottom:10px; }
+.receipt-divider  { border:none; border-top:2px dashed #CCC; margin:8px 0; }
+.receipt-item     { display:flex; justify-content:space-between; padding:4px 0; font-family:inherit; }
+.receipt-total    { display:flex; justify-content:space-between; font-weight:800; font-size:1.15em; color:#E53935; font-family:inherit; }
+.payment-card     { background:white; border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.1); }
+.payment-card-title { font-weight:800; font-size:.95em; margin-bottom:10px; }
+.payment-chips-wrap { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.pay-chip {
+  border:3px solid #DDD; border-radius:14px; padding:6px;
+  cursor:pointer; font-family:inherit; background:#FAFAFA;
+  transition:all .15s; user-select:none;
+  display:inline-flex; align-items:center; justify-content:center;
+  position:relative; -webkit-tap-highlight-color:transparent;
+}
+.pay-chip:active  { transform:scale(.92); }
+.pay-chip:hover   { border-color:#4ECDC4; }
+.pay-chip.selected { border-color:#2BA39A; background:#B2DFDB; box-shadow:0 0 0 3px rgba(78,205,196,.35); }
+.pay-chip.selected::after {
+  content:'✓'; position:absolute; top:-6px; right:-6px;
+  background:#2BA39A; color:white; border-radius:50%;
+  width:20px; height:20px; font-size:.75em; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 4px rgba(0,0,0,.2);
+}
+.payment-summary  { background:#F5F5F5; border-radius:12px; padding:12px 16px; text-align:center; font-size:1.05em; font-weight:800; }
+.payment-amount-val { color:#4ECDC4; font-size:1.3em; }
+.payment-hint     { font-size:.75em; color:#888; margin-top:4px; }
+.insufficient-msg { background:#FFEBEE; border:2px solid #EF9A9A; border-radius:12px; padding:10px 14px; font-size:.88em; color:#C62828; font-weight:700; margin-top:10px; display:none; }
+
+/* CHANGE */
+#screen-change { background:linear-gradient(160deg,#E8EAF6,#C5CAE9); align-items:center; }
+.timer-box { background:#3949AB; color:white; border-radius:50px; padding:8px 24px; font-size:1.6em; font-weight:800; letter-spacing:3px; margin-bottom:14px; box-shadow:0 4px 14px rgba(57,73,171,.4); }
+.change-info-card { background:white; border-radius:16px; padding:14px 18px; width:100%; box-shadow:0 4px 14px rgba(0,0,0,.1); margin-bottom:16px; text-align:center; font-size:.9em; line-height:2; }
+.change-display { background:white; border-radius:18px; padding:18px 30px; font-size:2.2em; font-weight:800; text-align:center; width:100%; box-shadow:0 6px 24px rgba(57,73,171,.2); margin-bottom:20px; color:#3949AB; letter-spacing:2px; min-height:75px; }
+.numpad { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; max-width:280px; margin-bottom:16px; }
+.nk { background:white; border:none; border-radius:14px; padding:18px 0; font-size:1.5em; font-weight:800; font-family:inherit; cursor:pointer; box-shadow:0 5px 0 #B0BEC5; transition:transform .1s,box-shadow .1s; user-select:none; }
+.nk:active    { transform:translateY(5px); box-shadow:none; }
+.nk.nk-clear  { background:#FFCDD2; box-shadow:0 5px 0 #EF9A9A; font-size:1em; grid-column:span 2; }
+.nk.nk-zero   { background:#F5F5F5; }
+.change-btns  { display:flex; gap:10px; width:100%; }
+
+/* RESULT */
+#screen-result { align-items:center; justify-content:center; text-align:center; gap:14px; padding:30px 20px; }
+.result-icon { font-size:100px; animation:popIn .6s cubic-bezier(.34,1.56,.64,1); }
+@keyframes popIn { 0%{transform:scale(0) rotate(-30deg);opacity:0;} 60%{transform:scale(1.2) rotate(5deg);opacity:1;} 100%{transform:scale(1) rotate(0);} }
+@keyframes rainbow { 0%{color:#FF6B35;} 16%{color:#FFD93D;} 33%{color:#56C870;} 50%{color:#4ECDC4;} 66%{color:#9C6FDE;} 83%{color:#FF6B6B;} 100%{color:#FF6B35;} }
+.result-title { font-size:2.4em; font-weight:800; color:white; text-shadow:2px 3px 0 rgba(0,0,0,.15); }
+.result-title.rainbow { animation:rainbow 1.2s linear infinite; text-shadow:none; }
+@keyframes bgPulse { 0%,100%{filter:brightness(1);} 50%{filter:brightness(1.15);} }
+.pulse-bg { animation:bgPulse .9s ease infinite; }
+.result-stars { font-size:2.2em; letter-spacing:4px; animation:twinkle .5s ease .3s both; }
+@keyframes twinkle { 0%{opacity:0;transform:scale(.4) rotate(-20deg);} 100%{opacity:1;transform:scale(1) rotate(0);} }
+.result-box { background:rgba(255,255,255,.22); border-radius:18px; padding:16px 22px; font-size:.95em; color:white; line-height:2; text-align:left; width:100%; }
+.result-box strong { font-size:1.1em; }
+.result-timer-box { background:rgba(255,255,255,.2); border-radius:12px; padding:10px 20px; color:white; font-size:1em; font-weight:700; width:100%; text-align:center; line-height:1.8; }
+.result-fail-reason { background:rgba(0,0,0,.15); border-radius:12px; padding:10px 16px; font-size:.88em; color:rgba(255,255,255,.95); line-height:1.7; width:100%; }
+
+/* CONFETTI */
+.confetti-container { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden; z-index:9999; }
+.confetti-piece { position:absolute; top:-20px; animation:confettiFall linear forwards; }
+@keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1;} 80%{opacity:1;} 100%{transform:translateY(110vh) rotate(720deg) scale(.5);opacity:0;} }
+
+/* MUTE BUTTON */
+.mute-btn {
+  position:fixed; top:10px; right:10px; z-index:10000;
+  background:rgba(255,255,255,.92); border:2px solid #DDD;
+  border-radius:50%; width:44px; height:44px; font-size:1.3em;
+  cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,.18);
+  font-family:inherit; user-select:none; -webkit-tap-highlight-color:transparent;
+  transition:transform .1s;
+}
+.mute-btn:active { transform:scale(.88); }
+
+/* DISCOUNT LINE */
+.discount-line { color:#56C870; font-weight:800; }
+.discount-line span:last-child { color:#43A047; }
+
+/* MISC */
+.mt-auto  { margin-top:auto; }
+.w-full   { width:100%; }
+.flex-row { display:flex; gap:10px; }
+</style>
+</head>
+<body>
+<button id="mute-btn" class="mute-btn" onclick="toggleMute()" title="BGM ON/OFF">🔊</button>
+<div id="game">
+
+<!-- TITLE -->
+<div id="screen-title" class="screen active">
+  <span class="title-cart">🛒</span>
+  <h1>おかいものゲーム</h1>
+  <p class="subtitle">おかねのつかいかたを　おぼえよう！</p>
+  <div class="difficulty-btns">
+    <button class="btn btn-pink"   onclick="startGame('veryeasy')">🌸 ちょうかんたん</button>
+    <button class="btn btn-green"  onclick="startGame('easy')">かんたん</button>
+    <button class="btn btn-blue"   onclick="startGame('normal')">ふつう</button>
+    <button class="btn btn-purple" onclick="startGame('hard')">むずかしい</button>
+    <button class="btn btn-red"    onclick="startGame('super')">ちょうむずかしい 🔥</button>
+  </div>
+</div>
+
+<!-- MISSION -->
+<div id="screen-mission" class="screen">
+  <div class="section-header header-mission">
+    <div style="font-size:2em">📋</div>
+    <h2>きょうのおかいもの</h2>
+    <p id="mission-subtitle">このしなものをかってきてね！</p>
+  </div>
+  <div class="shopping-list-card" id="shopping-list"></div>
+  <div class="total-card">
+    <span>ごうけい</span>
+    <span class="total-amount" id="mission-total">0円</span>
+  </div>
+  <div class="mt-auto" style="padding-top:18px">
+    <button class="btn btn-blue w-full" onclick="goToWallet()">おさいふにおかねをいれる 👛</button>
+  </div>
+</div>
+
+<!-- WALLET -->
+<div id="screen-wallet" class="screen">
+  <div class="section-header header-wallet">
+    <div style="font-size:2em">👛</div>
+    <h2>おかねをえらんでね</h2>
+    <p>ごうけい: <span id="wallet-target" style="font-size:1.2em;font-weight:800"></span></p>
+  </div>
+  <p class="wallet-hint">▼ おかねをおして　さいふにいれよう（なんまいでもOK）</p>
+  <div class="currency-section">
+    <div class="currency-section-title">🪙 こうか（コイン）</div>
+    <div class="coins-row">
+      <button class="coin-btn" onclick="addMoney(1)"><div class="coin-circle coin-1 sz-sm">1</div><span class="coin-label">1円</span></button>
+      <button class="coin-btn" onclick="addMoney(5)"><div class="coin-circle coin-5 sz-sm coin-hole">5</div><span class="coin-label">5円</span></button>
+      <button class="coin-btn" onclick="addMoney(10)"><div class="coin-circle coin-10 sz-md">10</div><span class="coin-label">10円</span></button>
+      <button class="coin-btn" onclick="addMoney(50)"><div class="coin-circle coin-50 sz-md coin-hole">50</div><span class="coin-label">50円</span></button>
+      <button class="coin-btn" onclick="addMoney(100)"><div class="coin-circle coin-100 sz-lg">100</div><span class="coin-label">100円</span></button>
+      <button class="coin-btn" onclick="addMoney(500)"><div class="coin-circle coin-500 sz-lg">500</div><span class="coin-label">500円</span></button>
+    </div>
+  </div>
+  <div class="currency-section">
+    <div class="currency-section-title">💴 おさつ</div>
+    <div class="bills-row">
+      <button class="bill-btn" onclick="addMoney(1000)"><div class="bill-rect bill-1000"><span>千円</span><span style="font-size:.65em;font-weight:400">¥1,000</span></div><span class="bill-label">1,000円</span></button>
+      <button class="bill-btn" onclick="addMoney(5000)"><div class="bill-rect bill-5000"><span>五千円</span><span style="font-size:.65em;font-weight:400">¥5,000</span></div><span class="bill-label">5,000円</span></button>
+      <button class="bill-btn" onclick="addMoney(10000)"><div class="bill-rect bill-10000"><span>一万円</span><span style="font-size:.65em;font-weight:400">¥10,000</span></div><span class="bill-label">10,000円</span></button>
+    </div>
+  </div>
+  <div class="wallet-box">
+    <div class="wallet-box-title">さいふのなか（タップでとりだす）</div>
+    <div class="wallet-chips" id="wallet-chips"></div>
+    <div class="wallet-total" id="wallet-total">0円</div>
+  </div>
+  <div class="flex-row">
+    <button class="btn btn-gray" onclick="showScreen('screen-mission')" style="flex:1">もどる</button>
+    <button class="btn btn-green" onclick="goToSupermarket()" style="flex:2">スーパーへ！ 🏪</button>
+  </div>
+</div>
+
+<!-- CORNERS -->
+<div id="screen-corners" class="screen">
+  <div class="section-header header-market">
+    <h2>🏪 スーパーマーケット</h2>
+    <p>どのコーナーへいく？</p>
+    <div class="basket-bar">かごのなか: <span id="basket-status-corners">まだなにもない</span></div>
+  </div>
+  <div class="corners-grid" id="corners-grid"></div>
+  <button class="btn btn-green w-full" id="to-register-btn-corners" onclick="goToRegister()" style="display:none">レジへすすむ 🧾</button>
+  <div style="margin-top:10px">
+    <button class="btn btn-gray w-full" onclick="goToWallet()">← おさいふにもどる</button>
+  </div>
+</div>
+
+<!-- MARKET -->
+<div id="screen-market" class="screen">
+  <div class="section-header header-market" id="market-header">
+    <h2>🏪 スーパーマーケット</h2>
+    <div class="basket-bar">かごのなか: <span id="basket-status">まだなにもない</span></div>
+  </div>
+  <div class="reminder-bar" id="reminder-bar"></div>
+  <div class="market-grid" id="market-grid"></div>
+  <button class="btn btn-green" id="to-register-btn" onclick="goToRegister()">レジへすすむ 🧾</button>
+</div>
+
+<!-- REGISTER -->
+<div id="screen-register" class="screen">
+  <div class="section-header header-register">
+    <div style="font-size:2em">🧾</div>
+    <h2>レジ</h2>
+    <p>しはらうおかねをえらんでね</p>
+  </div>
+  <div class="receipt-card" id="receipt-card"></div>
+  <div class="payment-card">
+    <div class="payment-card-title">💰 さいふのなか（えらんでしはらおう）</div>
+    <div class="payment-chips-wrap" id="payment-chips"></div>
+    <div class="payment-summary">
+      しはらいきん: <span class="payment-amount-val" id="pay-amount-val">0</span>円
+      <div class="payment-hint" id="pay-hint"></div>
+    </div>
+    <div class="insufficient-msg" id="insufficient-msg">⚠ おかねがたりないよ！もっとえらんでね</div>
+  </div>
+  <div class="flex-row">
+    <button class="btn btn-gray" onclick="backFromRegister()" style="flex:1">もどる</button>
+    <button class="btn btn-green" onclick="processPayment()" style="flex:2">しはらう 💳</button>
+  </div>
+</div>
+
+<!-- CHANGE -->
+<div id="screen-change" class="screen" style="align-items:center">
+  <div class="section-header header-change" style="width:calc(100% + 40px);margin-left:-20px">
+    <div style="font-size:2em">🪙</div>
+    <h2>おつりはいくら？</h2>
+    <p>すうじをおして　こたえてね</p>
+  </div>
+  <div class="timer-box">⏱ <span id="timer-display">0:00</span></div>
+  <div class="change-info-card" id="change-info"></div>
+  <div class="change-display" id="change-display">？ 円</div>
+  <div class="numpad">
+    <button class="nk" onclick="numInput('7')">7</button>
+    <button class="nk" onclick="numInput('8')">8</button>
+    <button class="nk" onclick="numInput('9')">9</button>
+    <button class="nk" onclick="numInput('4')">4</button>
+    <button class="nk" onclick="numInput('5')">5</button>
+    <button class="nk" onclick="numInput('6')">6</button>
+    <button class="nk" onclick="numInput('1')">1</button>
+    <button class="nk" onclick="numInput('2')">2</button>
+    <button class="nk" onclick="numInput('3')">3</button>
+    <button class="nk nk-clear" onclick="numDelete()">⌫ けす</button>
+    <button class="nk nk-zero" onclick="numInput('0')">0</button>
+  </div>
+  <div class="change-btns">
+    <button class="btn btn-gray" onclick="backToRegister()" style="flex:1">もどる</button>
+    <button class="btn btn-green" onclick="confirmChange()" style="flex:2">かくにん！ ✅</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div class="result-icon"  id="result-icon">🎉</div>
+  <div class="result-title" id="result-title">せいかい！</div>
+  <div class="result-stars" id="result-stars">⭐⭐⭐</div>
+  <div class="result-box"   id="result-box"></div>
+  <div class="result-timer-box"    id="result-timer-box"    style="display:none"></div>
+  <div class="result-fail-reason"  id="result-fail-reason"  style="display:none"></div>
+  <button class="btn w-full" onclick="showScreen('screen-title')" style="margin-top:8px">もういちど！ 🔄</button>
+</div>
+
+</div><!-- #game -->
+<div id="confetti-container" class="confetti-container"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const PRODUCTS = [
+  // drink/dairy
+  {id:'milk',    name:'ぎゅうにゅう',   emoji:'🥛', price:218, unit:'1本',    corner:'drink'},
+  {id:'juice',   name:'ジュース',       emoji:'🧃', price:198, unit:'1パック', corner:'drink'},
+  {id:'yogurt',  name:'ヨーグルト',     emoji:'🥣', price:148, unit:'1こ',    corner:'drink'},
+  {id:'butter',  name:'バター',         emoji:'🧈', price:398, unit:'1こ',    corner:'drink'},
+  {id:'cheese',  name:'チーズ',         emoji:'🧀', price:298, unit:'1こ',    corner:'drink'},
+  {id:'tofu',    name:'とうふ',         emoji:'⬜', price: 88, unit:'1こ',    corner:'drink'},
+  // vege/fruit
+  {id:'apple',   name:'りんご',         emoji:'🍎', price:198, unit:'1こ',    corner:'vege'},
+  {id:'banana',  name:'バナナ',         emoji:'🍌', price:178, unit:'1ふさ',  corner:'vege'},
+  {id:'mikan',   name:'みかん',         emoji:'🍊', price:148, unit:'1こ',    corner:'vege'},
+  {id:'potato',  name:'じゃがいも',     emoji:'🥔', price: 78, unit:'1こ',    corner:'vege'},
+  {id:'carrot',  name:'にんじん',       emoji:'🥕', price: 88, unit:'1本',    corner:'vege'},
+  {id:'cabbage', name:'キャベツ',       emoji:'🥬', price:228, unit:'1こ',    corner:'vege'},
+  {id:'tomato',  name:'トマト',         emoji:'🍅', price:128, unit:'1こ',    corner:'vege'},
+  {id:'cucumber',name:'きゅうり',       emoji:'🥒', price: 78, unit:'1本',    corner:'vege'},
+  {id:'corn',    name:'コーン',         emoji:'🌽', price: 98, unit:'1本',    corner:'vege'},
+  {id:'mushroom',name:'きのこ',         emoji:'🍄', price:138, unit:'1パック', corner:'vege'},
+  // meat/egg
+  {id:'egg',     name:'たまご',         emoji:'🥚', price:268, unit:'10こ',   corner:'meat'},
+  {id:'ham',     name:'ハム',           emoji:'🥩', price:248, unit:'1パック', corner:'meat'},
+  // bread/bento
+  {id:'bread',   name:'しょくぱん',     emoji:'🍞', price:185, unit:'1ふくろ', corner:'bread'},
+  {id:'onigiri', name:'おにぎり',       emoji:'🍙', price:148, unit:'1こ',    corner:'bread'},
+  // instant
+  {id:'noodle',  name:'カップめん',     emoji:'🍜', price:218, unit:'1こ',    corner:'instant'},
+  {id:'curry',   name:'カレーレトルト', emoji:'🍛', price:248, unit:'1こ',    corner:'instant'},
+  // snack
+  {id:'choco',   name:'チョコレート',   emoji:'🍫', price:158, unit:'1まい',  corner:'snack'},
+  {id:'cracker', name:'せんべい',       emoji:'🍘', price:148, unit:'1ふくろ', corner:'snack'},
+  {id:'candy',   name:'キャンディ',     emoji:'🍬', price:118, unit:'1ふくろ', corner:'snack'},
+  {id:'chips',   name:'ポテトチップス', emoji:'🍟', price:158, unit:'1ふくろ', corner:'snack'},
+];
+
+const CORNERS = [
+  {id:'drink',   name:'のみもの・にゅうせいひん', emoji:'🥛'},
+  {id:'vege',    name:'やさい・くだもの',         emoji:'🥦'},
+  {id:'meat',    name:'にく・たまごコーナー',      emoji:'🥚'},
+  {id:'bread',   name:'パン・おべんとうコーナー',  emoji:'🍞'},
+  {id:'instant', name:'かんしょく・レトルト',      emoji:'🍜'},
+  {id:'snack',   name:'おかしコーナー',            emoji:'🍫'},
+];
+
+// ── STATE ─────────────────────────────────────────────
+let S = {};
+let timerIv = null;
+
+function resetState() {
+  S = {
+    mode:'easy', hidePrice:false,
+    list:[], total:0,
+    wallet:[], basket:[],
+    marketItems:[], cornerItems:{}, currentCorner:null,
+    payIdxs:[], paidAmt:0, expectedChange:0, changeStr:'',
+    timerStart:null, timerElapsed:0,
+    discount:0,  // むずかしい+ で時々マイナスの値（-10〜-100）
+  };
+  stopTimer();
+}
+
+// ── HELPERS ───────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // BGM: スーパー（コーナー or マーケット）でON、それ以外はOFF
+  const inSuper = (id==='screen-corners' || id==='screen-market');
+  if (inSuper) startBgm(); else stopBgm();
+}
+function shuffle(a) { return [...a].sort(() => Math.random() - .5); }
+function yen(n)     { return Number(n).toLocaleString('ja-JP') + '円'; }
+function ri(a,b)    { return Math.floor(Math.random()*(b-a+1))+a; }
+
+// ── BGM (Web Audio API) ───────────────────────────────
+// スーパー店内BGM。明るいハ長調・I-IV-V-Iの軽快ループ
+let audioCtx = null;
+let bgmGainNode = null;  // BGM専用マスター音量。stopBgm でランプダウンして予約済み音も消す
+let bgmTimerId = null;
+let bgmMuted = (typeof localStorage!=='undefined') && localStorage.getItem('okaimono-muted')==='1';
+
+const NOTE = {
+  C3:130.81, E3:164.81, F3:174.61, G3:196.00, A3:220.00, C4:261.63,
+  D4:293.66, E4:329.63, F4:349.23, G4:392.00, A4:440.00, B4:493.88,
+  C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99, A5:880.00, B5:987.77,
+};
+// 4小節 × 4拍 = 16拍のメロディ（C - F - G - C 進行）
+const MELODY = [
+  'E5','G5','E5','C5',  // C
+  'F5','A5','F5','D5',  // F
+  'D5','G5','B4','D5',  // G
+  'C5','E5','G5','E5',  // C
+];
+const BASS = ['C3','F3','G3','C3']; // 各小節の頭（4拍ごと）
+const BPM = 104;
+
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e) { return false; }
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (!bgmGainNode) {
+    bgmGainNode = audioCtx.createGain();
+    bgmGainNode.gain.value = 1;
+    bgmGainNode.connect(audioCtx.destination);
+  }
+  return true;
+}
+
+// dest: 接続先 GainNode（省略時は destination 直結）
+function playTone(freq, start, dur, type, peak, dest) {
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, start);
+  g.gain.linearRampToValueAtTime(peak, start + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  o.connect(g);
+  g.connect(dest || audioCtx.destination);
+  o.start(start); o.stop(start + dur + 0.05);
+}
+
+function scheduleBgmLoop() {
+  if (bgmMuted || !audioCtx) return;
+  const beat  = 60 / BPM;
+  const start = audioCtx.currentTime + 0.05;
+  // メロディ → bgmGainNode 経由
+  MELODY.forEach((n, i) => {
+    if (n) playTone(NOTE[n], start + i*beat, beat*0.85, 'triangle', 0.06, bgmGainNode);
+  });
+  // ベース → bgmGainNode 経由
+  BASS.forEach((n, i) => {
+    if (n) playTone(NOTE[n], start + i*beat*4, beat*4*0.95, 'sine', 0.10, bgmGainNode);
+  });
+  bgmTimerId = setTimeout(scheduleBgmLoop, beat * 16 * 1000);
+}
+
+function startBgm() {
+  if (bgmMuted) return;
+  if (!ensureAudio()) return;
+  // gain を1にランプアップ（停止状態から再開時）
+  const t = audioCtx.currentTime;
+  bgmGainNode.gain.cancelScheduledValues(t);
+  bgmGainNode.gain.setValueAtTime(bgmGainNode.gain.value, t);
+  bgmGainNode.gain.linearRampToValueAtTime(1, t + 0.05);
+  if (bgmTimerId) return; // 既に再生中
+  scheduleBgmLoop();
+}
+
+function stopBgm() {
+  if (bgmTimerId) { clearTimeout(bgmTimerId); bgmTimerId = null; }
+  // 予約済みのBGMオシレーターも即無音化
+  if (audioCtx && bgmGainNode) {
+    const t = audioCtx.currentTime;
+    bgmGainNode.gain.cancelScheduledValues(t);
+    bgmGainNode.gain.setValueAtTime(bgmGainNode.gain.value, t);
+    bgmGainNode.gain.linearRampToValueAtTime(0, t + 0.05);
+  }
+}
+
+// 成功時ファンファーレ（短い「タッタラ〜♪」）
+function playSuccessFanfare() {
+  if (bgmMuted) return;
+  if (!ensureAudio()) return;
+  const t0 = audioCtx.currentTime + 0.05;
+  const beat = 0.13;
+  // 上昇アルペジオ
+  const arp = ['G4','C5','E5','G5','C5'];
+  arp.forEach((n,i) => playTone(NOTE[n], t0 + i*beat, beat*0.95, 'square', 0.10));
+  // 最後に和音をジャーン（長め）
+  const chordStart = t0 + arp.length*beat;
+  ['C5','E5','G5','C5'].forEach((n,i) => {
+    // C5 を2回入れて厚みを出す（オクターブ違いの近似）
+    playTone(NOTE[n] * (i===3?2:1), chordStart, 0.85, 'square', 0.08);
+  });
+}
+
+function toggleMute() {
+  bgmMuted = !bgmMuted;
+  try { localStorage.setItem('okaimono-muted', bgmMuted ? '1' : '0'); } catch(e) {}
+  document.getElementById('mute-btn').textContent = bgmMuted ? '🔇' : '🔊';
+  if (bgmMuted) {
+    stopBgm();
+  } else {
+    const active = document.querySelector('.screen.active');
+    if (active && (active.id==='screen-corners' || active.id==='screen-market')) startBgm();
+  }
+}
+
+// 起動時ボタン状態
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('mute-btn').textContent = bgmMuted ? '🔇' : '🔊';
+});
+
+// ── TIMER ─────────────────────────────────────────────
+function startTimer() {
+  stopTimer();
+  S.timerStart = Date.now(); S.timerElapsed = 0;
+  document.getElementById('timer-display').textContent = '0:00';
+  timerIv = setInterval(() => {
+    const e = Math.floor((Date.now()-S.timerStart)/1000);
+    document.getElementById('timer-display').textContent =
+      `${Math.floor(e/60)}:${String(e%60).padStart(2,'0')}`;
+  }, 200);
+}
+function stopTimer() {
+  if (timerIv) { clearInterval(timerIv); timerIv = null; }
+  if (S.timerStart) S.timerElapsed = Math.floor((Date.now()-S.timerStart)/1000);
+}
+function fmtTime(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+function timeRating(s) {
+  if (s<=10) return {stars:'⚡⚡⚡', msg:'はやすぎ！すごい！'};
+  if (s<=20) return {stars:'⚡⚡',  msg:'とてもはやい！'};
+  if (s<=40) return {stars:'⚡',   msg:'じょうず！'};
+  return           {stars:'🐢',   msg:'よくできました！'};
+}
+
+// ── CONFETTI ──────────────────────────────────────────
+function launchConfetti() {
+  const ct = document.getElementById('confetti-container');
+  ct.innerHTML = '';
+  const colors=['#FF6B35','#FFD93D','#4ECDC4','#56C870','#9C6FDE','#FF6B6B','#4FC3F7','#F06292'];
+  for (let i=0; i<110; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    const sz = 6+Math.random()*10;
+    el.style.cssText =
+      `left:${Math.random()*100}%;width:${sz}px;height:${sz}px;` +
+      `background:${colors[ri(0,colors.length-1)]};` +
+      `border-radius:${Math.random()>.5?'50%':'3px'};` +
+      `animation-delay:${(Math.random()*.9).toFixed(2)}s;` +
+      `animation-duration:${(1.2+Math.random()*1.6).toFixed(2)}s;`;
+    ct.appendChild(el);
+  }
+  setTimeout(() => ct.innerHTML='', 4000);
+}
+
+// ── START ─────────────────────────────────────────────
+function startGame(mode) {
+  resetState(); S.mode = mode;
+  let n;
+  if      (mode==='veryeasy'){ n=1;       S.hidePrice=false; }
+  else if (mode==='easy')    { n=3;       S.hidePrice=false; }
+  else if (mode==='normal')  { n=ri(3,5); S.hidePrice=false; }
+  else if (mode==='hard')    { n=ri(4,6); S.hidePrice=false; }
+  else                       { n=ri(3,5); S.hidePrice=true;  }
+  S.list  = shuffle(PRODUCTS).slice(0,n).map(p=>({product:p,qty:1}));
+  S.total = S.list.reduce((s,i)=>s+i.product.price*i.qty,0);
+  renderMission(); showScreen('screen-mission');
+}
+
+// ── MISSION ───────────────────────────────────────────
+function renderMission() {
+  document.getElementById('mission-subtitle').textContent =
+    S.hidePrice ? 'ねだんをよそうして　おかねをもっていこう！🔥' : 'このしなものをかってきてね！';
+  document.getElementById('shopping-list').innerHTML = S.list.map(({product:p,qty})=>`
+    <div class="list-item">
+      <span class="list-emoji">${p.emoji}</span>
+      <div style="flex:1"><div class="list-name">${p.name}</div><div class="list-detail">${p.unit} × ${qty}</div></div>
+      <span class="list-price" style="${S.hidePrice?'color:#CCC;letter-spacing:2px':''}">
+        ${S.hidePrice ? '？？？円' : yen(p.price*qty)}
+      </span>
+    </div>`).join('');
+  const el = document.getElementById('mission-total');
+  el.textContent = S.hidePrice ? '？ 円' : yen(S.total);
+  el.style.color  = S.hidePrice ? '#CCC' : '';
+}
+
+// ── WALLET ────────────────────────────────────────────
+function goToWallet() {
+  const te = document.getElementById('wallet-target');
+  if (S.hidePrice) { te.textContent='？ 円（スーパーでかくにん！）'; te.style.color='#E53935'; }
+  else             { te.textContent=yen(S.total); te.style.color=''; }
+  renderWallet(); showScreen('screen-wallet');
+}
+function addMoney(v)    { S.wallet.push(v); renderWallet(); }
+function removeMoney(v) { const i=S.wallet.lastIndexOf(v); if(i!==-1) S.wallet.splice(i,1); renderWallet(); }
+function renderWallet() {
+  const g={};
+  S.wallet.forEach(v=>{ g[v]=(g[v]||0)+1; });
+  document.getElementById('wallet-chips').innerHTML = Object.entries(g)
+    .sort((a,b)=>b[0]-a[0])
+    .map(([v,c])=>`<button class="wallet-chip" onclick="removeMoney(${v})">${Number(v)>=1000?yen(v):v+'円'}×${c} ✕</button>`)
+    .join('');
+  const tot = S.wallet.reduce((s,v)=>s+v,0);
+  const el  = document.getElementById('wallet-total');
+  el.textContent = 'ごうけい: '+yen(tot);
+  el.className   = 'wallet-total'+(!S.hidePrice&&tot>=S.total?' enough':'');
+}
+
+// ── SUPERMARKET ENTRY ─────────────────────────────────
+function goToSupermarket() {
+  const wt = S.wallet.reduce((s,v)=>s+v,0);
+  if (!S.hidePrice && wt<S.total) {
+    if (!confirm(`さいふのおかねが　たりないかもしれないよ！\nもっていくおかね: ${yen(wt)}\nごうけい: ${yen(S.total)}\n\nこのままスーパーへいく？`)) return;
+  }
+  S.basket = [];
+  // build corner items
+  const needed = new Set(S.list.map(i=>i.product.id));
+  CORNERS.forEach(c=>{
+    const here     = PRODUCTS.filter(p=>p.corner===c.id);
+    const nHere    = here.filter(p=>needed.has(p.id));
+    const eHere    = shuffle(here.filter(p=>!needed.has(p.id)));
+    S.cornerItems[c.id] = shuffle([...nHere, ...eHere.slice(0, Math.max(0,6-nHere.length))]);
+  });
+  if (S.mode==='easy' || S.mode==='veryeasy') {
+    const extraN = S.mode==='veryeasy' ? 5 : 9;
+    const extras = shuffle(PRODUCTS.filter(p=>!needed.has(p.id))).slice(0,extraN);
+    S.marketItems = shuffle([...S.list.map(i=>i.product), ...extras]);
+    S.currentCorner = null;
+    renderMarket(); showScreen('screen-market');
+  } else {
+    renderCorners(); showScreen('screen-corners');
+  }
+}
+
+// ── CORNERS ───────────────────────────────────────────
+function renderCorners() {
+  const needed = new Set(S.list.map(i=>i.product.id));
+  const coll   = new Set(S.basket);
+  document.getElementById('corners-grid').innerHTML = CORNERS.map(c=>{
+    const nHere      = S.list.filter(i=>i.product.corner===c.id);
+    const allDone    = nHere.length>0 && nHere.every(i=>coll.has(i.product.id));
+    const showExclam = nHere.length>0 && !allDone && S.mode!=='super';
+    return `
+      <div class="corner-card ${allDone?'corner-done':''}" onclick="enterCorner('${c.id}')">
+        ${showExclam ? '<div class="corner-badge">！</div>' : ''}
+        ${allDone    ? '<div class="corner-badge corner-badge-done">✓</div>' : ''}
+        <div class="corner-emoji">${c.emoji}</div>
+        <div class="corner-name">${c.name}</div>
+      </div>`;
+  }).join('');
+  const be = document.getElementById('basket-status-corners');
+  be.textContent = S.basket.length===0 ? 'まだなにもない'
+    : S.basket.map(id=>PRODUCTS.find(p=>p.id===id)?.emoji||'').join(' ');
+  const allDone = S.list.every(i=>coll.has(i.product.id));
+  document.getElementById('to-register-btn-corners').style.display = allDone?'block':'none';
+}
+function enterCorner(cid) {
+  S.currentCorner = cid;
+  S.marketItems   = S.cornerItems[cid] || [];
+  renderMarket(); showScreen('screen-market');
+}
+function showCorners() { renderCorners(); showScreen('screen-corners'); }
+
+// ── MARKET ────────────────────────────────────────────
+function renderMarket() {
+  const coll = new Set(S.basket);
+  // header
+  const hdr = document.getElementById('market-header');
+  if (S.mode!=='easy' && S.mode!=='veryeasy' && S.currentCorner) {
+    const c = CORNERS.find(x=>x.id===S.currentCorner);
+    hdr.innerHTML = `
+      <button class="market-back-btn" onclick="showCorners()">← もどる</button>
+      <div class="market-corner-title">${c.emoji} ${c.name}</div>
+      <div class="basket-bar">かごのなか: <span id="basket-status">まだなにもない</span></div>`;
+  } else {
+    hdr.innerHTML = `<h2>🏪 スーパーマーケット</h2>
+      <div class="basket-bar">かごのなか: <span id="basket-status">まだなにもない</span></div>`;
+  }
+  // reminder
+  document.getElementById('reminder-bar').innerHTML = '📋 ' +
+    S.list.map(({product:p})=>`<span class="reminder-item ${coll.has(p.id)?'done':'pending'}">${p.emoji}${p.name}</span>`).join('');
+  // grid — no highlighting for needed items
+  document.getElementById('market-grid').innerHTML = S.marketItems.map(p=>{
+    const done = coll.has(p.id);
+    return `<div class="market-item ${done?'collected':''}" id="mi-${p.id}" onclick="collectItem('${p.id}')">
+      <div class="${done?'collected-check':'market-emoji'}">${done?'✅':p.emoji}</div>
+      <div class="market-name">${p.name}</div>
+      <div class="market-price">${yen(p.price)}</div>
+    </div>`;
+  }).join('');
+  // basket status
+  const bs = document.getElementById('basket-status');
+  if (bs) bs.textContent = S.basket.length===0 ? 'まだなにもない'
+    : S.basket.map(id=>PRODUCTS.find(p=>p.id===id)?.emoji||'').join(' ');
+  // register btn (easy only)
+  const rb = document.getElementById('to-register-btn');
+  rb.style.display = ((S.mode==='easy'||S.mode==='veryeasy') && S.list.every(i=>coll.has(i.product.id))) ? 'block' : 'none';
+}
+function collectItem(pid) {
+  const needed = new Set(S.list.map(i=>i.product.id));
+  if (!needed.has(pid)) {
+    const el = document.getElementById(`mi-${pid}`);
+    if (el) { el.classList.add('wrong'); setTimeout(()=>el.classList.remove('wrong'),400); }
+    return;
+  }
+  if (!S.basket.includes(pid)) { S.basket.push(pid); renderMarket(); }
+}
+
+// ── REGISTER ──────────────────────────────────────────
+function goToRegister() {
+  S.payIdxs = [];
+
+  // 20%の確率で割引（むずかしい・ちょうむずかしいのみ）
+  S.discount = 0;
+  if ((S.mode==='hard' || S.mode==='super') && Math.random() < 0.20) {
+    const opts = [-10, -30, -50, -100];
+    S.discount = opts[Math.floor(Math.random()*opts.length)];
+  }
+  const finalTotal = S.total + S.discount;
+
+  document.getElementById('receipt-card').innerHTML =
+    `<div class="receipt-title">🧾 レシート</div><hr class="receipt-divider">` +
+    S.list.map(({product:p,qty})=>`<div class="receipt-item"><span>${p.emoji} ${p.name}</span><span>${yen(p.price*qty)}</span></div>`).join('') +
+    (S.discount!==0
+      ? `<hr class="receipt-divider"><div class="receipt-item discount-line"><span>🎉 わりびき</span><span>${S.discount}円</span></div>`
+      : '') +
+    `<hr class="receipt-divider"><div class="receipt-total"><span>ごうけい</span><span>${yen(finalTotal)}</span></div>`;
+
+  renderPayChips();
+  document.getElementById('pay-hint').textContent = `${yen(finalTotal)}いじょうえらんでね`;
+  document.getElementById('insufficient-msg').style.display = 'none';
+  showScreen('screen-register');
+}
+// 金額 → 視覚的なコイン/お札のHTML
+function moneyIcon(v) {
+  switch(v) {
+    case 1:     return '<div class="coin-circle coin-1 sz-sm">1</div>';
+    case 5:     return '<div class="coin-circle coin-5 sz-sm coin-hole">5</div>';
+    case 10:    return '<div class="coin-circle coin-10 sz-md">10</div>';
+    case 50:    return '<div class="coin-circle coin-50 sz-md coin-hole">50</div>';
+    case 100:   return '<div class="coin-circle coin-100 sz-lg">100</div>';
+    case 500:   return '<div class="coin-circle coin-500 sz-lg">500</div>';
+    case 1000:  return '<div class="bill-rect bill-1000"><span>千円</span></div>';
+    case 5000:  return '<div class="bill-rect bill-5000"><span>五千円</span></div>';
+    case 10000: return '<div class="bill-rect bill-10000"><span>一万円</span></div>';
+    default:    return v + '円';
+  }
+}
+
+function renderPayChips() {
+  document.getElementById('payment-chips').innerHTML = S.wallet.map((v,i)=>{
+    const sel = S.payIdxs.includes(i);
+    return `<button class="pay-chip ${sel?'selected':''}" onclick="togglePay(${i})" title="${v>=1000?yen(v):v+'円'}">${moneyIcon(v)}</button>`;
+  }).join('');
+  const paid = S.payIdxs.reduce((s,i)=>s+S.wallet[i],0);
+  document.getElementById('pay-amount-val').textContent = paid.toLocaleString('ja-JP');
+}
+function togglePay(i) {
+  const p = S.payIdxs.indexOf(i);
+  if (p!==-1) S.payIdxs.splice(p,1); else S.payIdxs.push(i);
+  renderPayChips();
+  document.getElementById('insufficient-msg').style.display='none';
+}
+function backFromRegister() {
+  (S.mode==='easy' || S.mode==='veryeasy') ? showScreen('screen-market') : showCorners();
+}
+function processPayment() {
+  const paid = S.payIdxs.reduce((s,i)=>s+S.wallet[i],0);
+  const finalTotal = S.total + S.discount;
+  if (paid<finalTotal) { document.getElementById('insufficient-msg').style.display='block'; return; }
+  S.paidAmt=paid; S.expectedChange=paid-finalTotal; S.changeStr='';
+
+  // ちょうかんたん：おつり画面をスキップして即せいこう
+  if (S.mode==='veryeasy') {
+    showResult(true, S.expectedChange);
+    return;
+  }
+
+  document.getElementById('change-info').innerHTML =
+    `しはらったおかね: <strong style="color:#3949AB;font-size:1.1em">${yen(paid)}</strong><br>` +
+    `かいものごうけい: <strong style="color:#E53935;font-size:1.1em">${yen(finalTotal)}</strong>` +
+    (S.discount!==0
+      ? `<br><span style="color:#56C870;font-size:.85em;font-weight:700">🎉 わりびき ${S.discount}円　てきよう！</span>`
+      : '');
+  document.getElementById('change-display').textContent='？ 円';
+  showScreen('screen-change'); startTimer();
+}
+
+// ── CHANGE ────────────────────────────────────────────
+function numInput(d) {
+  if (S.changeStr.length>=6 || S.changeStr==='0') return;
+  S.changeStr+=d; updCD();
+}
+function numDelete() { S.changeStr=S.changeStr.slice(0,-1); updCD(); }
+function updCD() {
+  document.getElementById('change-display').textContent =
+    S.changeStr==='' ? '？ 円' : Number(S.changeStr).toLocaleString('ja-JP')+' 円';
+}
+function confirmChange() {
+  if (!S.changeStr) { alert('すうじをいれてね！'); return; }
+  stopTimer(); showResult(Number(S.changeStr)===S.expectedChange, Number(S.changeStr));
+}
+function backToRegister() { stopTimer(); showScreen('screen-register'); }
+
+// ── RESULT ────────────────────────────────────────────
+function showResult(ok, entered) {
+  const sc  = document.getElementById('screen-result');
+  const ico = document.getElementById('result-icon');
+  const ttl = document.getElementById('result-title');
+  const sts = document.getElementById('result-stars');
+  const box = document.getElementById('result-box');
+  const tmr = document.getElementById('result-timer-box');
+  const fal = document.getElementById('result-fail-reason');
+
+  // reset
+  ttl.classList.remove('rainbow'); sc.classList.remove('pulse-bg');
+
+  if (ok) {
+    sc.style.background = 'linear-gradient(160deg,#1B5E20,#43A047)';
+    sc.classList.add('pulse-bg');
+    ico.textContent = '🎊';
+    ttl.textContent = 'せいかい！'; ttl.classList.add('rainbow');
+    sts.style.display = 'block';
+    sts.textContent = S.expectedChange===0 ? '⭐⭐⭐ ピッタリ！' : '⭐⭐⭐';
+    box.innerHTML =
+      (S.discount!==0
+        ? `しなもの：<strong>${yen(S.total)}</strong><br>わりびき：<strong>${S.discount}円</strong> 🎉<br>ごうけい：<strong>${yen(S.total+S.discount)}</strong><br>`
+        : `かいもの：<strong>${yen(S.total+S.discount)}</strong><br>`) +
+      `しはらい：<strong>${yen(S.paidAmt)}</strong><br>おつり：<strong>${yen(S.expectedChange)}</strong><br><br>` +
+      (S.mode==='veryeasy' ? '🌟 ちゃんとはらえたね！' : '🌟 じょうずにかいものできたね！');
+    if (S.mode==='veryeasy') {
+      tmr.style.display='none';
+    } else {
+      const r = timeRating(S.timerElapsed);
+      tmr.style.display='block';
+      tmr.innerHTML=`⏱ タイム: <strong>${fmtTime(S.timerElapsed)}</strong>　${r.stars}<br>${r.msg}`;
+    }
+    fal.style.display='none';
+    launchConfetti();
+    playSuccessFanfare();
+  } else {
+    sc.style.background = 'linear-gradient(160deg,#B71C1C,#E53935)';
+    ico.textContent = '😢';
+    ttl.textContent = 'ざんねん！';
+    sts.style.display='none';
+    box.innerHTML =
+      (S.discount!==0
+        ? `しなもの：<strong>${yen(S.total)}</strong><br>わりびき：<strong>${S.discount}円</strong><br>ごうけい：<strong>${yen(S.total+S.discount)}</strong><br>`
+        : `かいもの：<strong>${yen(S.total)}</strong><br>`) +
+      `しはらい：<strong>${yen(S.paidAmt)}</strong>`;
+    tmr.style.display='none';
+    fal.style.display='block';
+    fal.innerHTML=`こたえたおつり: <strong>${yen(entered)}</strong><br>ただしいおつり: <strong>${yen(S.expectedChange)}</strong><br>もう一度チャレンジしよう！💪`;
+  }
+  showScreen('screen-result');
+}
+</script>
+</body>
+</html>
