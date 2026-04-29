@@ -998,8 +998,8 @@ function processPayment() {
 
   document.getElementById('change-info').innerHTML =
     `しはらったおかね: <strong style="color:#3949AB;font-size:1.1em">${yen(paid)}</strong><br>` +
-    `かいものごうけい: <strong style="color:#E53935;font-size:1.1em">${yen(finalTotal)}</strong>` +
-    (S.discount!==0
+    `かいものごうけい: <strong style="color:#E53935;font-size:1.1em">${S.mode==='hell' ? '？ 円' : yen(finalTotal)}</strong>` +
+    (S.discount!==0 && S.mode!=='hell'
       ? `<br><span style="color:#56C870;font-size:.85em;font-weight:700">🎉 わりびき ${S.discount}円　てきよう！</span>`
       : '');
   document.getElementById('change-display').textContent='？ 円';
