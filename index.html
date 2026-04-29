@@ -29,6 +29,42 @@ body {
 .btn-purple { background: #9C6FDE; box-shadow: 0 5px 0 #7248B8; }
 .btn-red    { background: #E53935; box-shadow: 0 5px 0 #B71C1C; }
 .btn-pink   { background: #FF80AB; box-shadow: 0 5px 0 #C94F7C; }
+.btn-sky    { background: linear-gradient(135deg,#81D4FA,#4FC3F7); box-shadow: 0 5px 0 #0288D1; }
+.btn-dark   { background: linear-gradient(135deg,#37474F,#1A1A2E); color:#FFCDD2; box-shadow: 0 5px 0 #000; }
+
+/* HOME BUTTON */
+.home-btn {
+  position:fixed; top:10px; left:10px; z-index:10000;
+  background:rgba(255,255,255,.92); border:2px solid #DDD;
+  border-radius:50%; width:44px; height:44px; font-size:1.3em;
+  cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,.18);
+  font-family:inherit; user-select:none; -webkit-tap-highlight-color:transparent;
+  transition:transform .1s; display:none;
+}
+.home-btn:active { transform:scale(.88); }
+
+/* MOM POPUP */
+.mom-popup-overlay {
+  position:fixed; inset:0; z-index:9000;
+  background:rgba(0,0,0,.55); display:none;
+  align-items:center; justify-content:center; padding:20px;
+}
+.mom-popup-overlay.show { display:flex; }
+.mom-popup-card {
+  background:white; border-radius:24px; padding:28px 24px;
+  text-align:center; max-width:380px; width:100%;
+  box-shadow:0 12px 40px rgba(0,0,0,.35);
+  animation:popIn .55s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { 0%{transform:scale(0) rotate(-10deg);opacity:0;} 100%{transform:scale(1) rotate(0);opacity:1;} }
+.mom-popup-emoji { font-size:5em; line-height:1; margin-bottom:10px; }
+.mom-popup-msg   { font-size:1.05em; font-weight:700; line-height:1.7; margin-bottom:14px; }
+.mom-popup-msg strong { color:#FF6B35; font-size:1.5em; display:inline-block; }
+.mom-popup-money {
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+  margin-bottom:18px; padding:14px; background:#FFFDE7;
+  border:2px dashed #FFD93D; border-radius:14px;
+}
 
 /* TITLE */
 #screen-title {
@@ -249,6 +285,18 @@ body {
 </head>
 <body>
 <button id="mute-btn" class="mute-btn" onclick="toggleMute()" title="BGM ON/OFF">🔊</button>
+<button id="home-btn" class="home-btn" onclick="goToTitle()" title="タイトルにもどる">🏠</button>
+
+<!-- MOM POPUP (てんごく) -->
+<div id="mom-popup" class="mom-popup-overlay">
+  <div class="mom-popup-card">
+    <div class="mom-popup-emoji">👩</div>
+    <div class="mom-popup-msg">おかあさんが<br><strong id="mom-amount">0円</strong><br>さいふにいれてくれたよ💕</div>
+    <div class="mom-popup-money" id="mom-money-icons"></div>
+    <button class="btn btn-blue w-full" onclick="closeMomPopup()">スーパーへ！🏪</button>
+  </div>
+</div>
+
 <div id="game">
 
 <!-- TITLE -->
@@ -257,11 +305,13 @@ body {
   <h1>おかいものゲーム</h1>
   <p class="subtitle">おかねのつかいかたを　おぼえよう！</p>
   <div class="difficulty-btns">
+    <button class="btn btn-sky"    onclick="startGame('heaven')">☁️ てんごく</button>
     <button class="btn btn-pink"   onclick="startGame('veryeasy')">🌸 ちょうかんたん</button>
     <button class="btn btn-green"  onclick="startGame('easy')">かんたん</button>
     <button class="btn btn-blue"   onclick="startGame('normal')">ふつう</button>
     <button class="btn btn-purple" onclick="startGame('hard')">むずかしい</button>
     <button class="btn btn-red"    onclick="startGame('super')">ちょうむずかしい 🔥</button>
+    <button class="btn btn-dark"   onclick="startGame('hell')">👹 じごく</button>
   </div>
 </div>
 
@@ -481,6 +531,18 @@ function showScreen(id) {
   // BGM: スーパー（コーナー or マーケット）でON、それ以外はOFF
   const inSuper = (id==='screen-corners' || id==='screen-market');
   if (inSuper) startBgm(); else stopBgm();
+  // ホームボタン：タイトル・結果以外で表示
+  const homeBtn = document.getElementById('home-btn');
+  if (homeBtn) homeBtn.style.display = (id==='screen-title' || id==='screen-result') ? 'none' : 'block';
+}
+
+// タイトル画面に戻る（確認あり）
+function goToTitle() {
+  if (confirm('タイトルにもどる？\nとちゅうのおかいものは　きえちゃうよ。')) {
+    // ポップアップが開いていたら閉じる
+    document.getElementById('mom-popup').classList.remove('show');
+    showScreen('screen-title');
+  }
 }
 function shuffle(a) { return [...a].sort(() => Math.random() - .5); }
 function yen(n)     { return Number(n).toLocaleString('ja-JP') + '円'; }
@@ -654,14 +716,59 @@ function launchConfetti() {
 function startGame(mode) {
   resetState(); S.mode = mode;
   let n;
-  if      (mode==='veryeasy'){ n=1;       S.hidePrice=false; }
+  if      (mode==='heaven')  { n=1;       S.hidePrice=false; }
+  else if (mode==='veryeasy'){ n=1;       S.hidePrice=false; }
   else if (mode==='easy')    { n=3;       S.hidePrice=false; }
   else if (mode==='normal')  { n=ri(3,5); S.hidePrice=false; }
   else if (mode==='hard')    { n=ri(4,6); S.hidePrice=false; }
-  else                       { n=ri(3,5); S.hidePrice=true;  }
+  else if (mode==='super')   { n=ri(3,5); S.hidePrice=true;  }
+  else if (mode==='hell')    { n=ri(4,6); S.hidePrice=true;  }
   S.list  = shuffle(PRODUCTS).slice(0,n).map(p=>({product:p,qty:1}));
   S.total = S.list.reduce((s,i)=>s+i.product.price*i.qty,0);
+
+  // じごく：合計1000円以上になるまでリトライ
+  if (mode==='hell') {
+    let tries = 0;
+    while (S.total < 1000 && tries < 60) {
+      S.list  = shuffle(PRODUCTS).slice(0,n).map(p=>({product:p,qty:1}));
+      S.total = S.list.reduce((s,i)=>s+i.product.price*i.qty,0);
+      tries++;
+    }
+    // フォールバック：高い順
+    if (S.total < 1000) {
+      S.list  = PRODUCTS.slice().sort((a,b)=>b.price-a.price).slice(0,n).map(p=>({product:p,qty:1}));
+      S.total = S.list.reduce((s,i)=>s+i.product.price*i.qty,0);
+    }
+  }
+
   renderMission(); showScreen('screen-mission');
+}
+
+// てんごくモード：おかあさんが値段より多めの金額をさいふに入れてくれる
+function autoFillForHeaven(target) {
+  // 「合計より多くて、おつりが出る現実的な金額」を返す
+  if (target <= 100)  return [100, 100];                   // 200円
+  if (target <= 200)  return [500];                        // 500円
+  if (target <= 500)  return [1000];                       // 1000円
+  if (target <= 1000) return [1000, 1000];                 // 2000円
+  if (target <= 2000) return [5000];                       // 5000円
+  if (target <= 5000) return [5000, 1000];                 // 6000円
+  return [10000];                                          // 10000円
+}
+
+function showMomPopup() {
+  const wallet = autoFillForHeaven(S.total);
+  S.wallet = wallet.slice();
+  const total = wallet.reduce((s,v)=>s+v,0);
+  document.getElementById('mom-amount').textContent = yen(total);
+  document.getElementById('mom-money-icons').innerHTML =
+    wallet.map(v => moneyIcon(v)).join('');
+  document.getElementById('mom-popup').classList.add('show');
+}
+
+function closeMomPopup() {
+  document.getElementById('mom-popup').classList.remove('show');
+  goToSupermarket();
 }
 
 // ── MISSION ───────────────────────────────────────────
@@ -683,6 +790,9 @@ function renderMission() {
 
 // ── WALLET ────────────────────────────────────────────
 function goToWallet() {
+  // てんごく：おさいふ画面をスキップして、おかあさんポップアップ
+  if (S.mode === 'heaven') { showMomPopup(); return; }
+
   const te = document.getElementById('wallet-target');
   if (S.hidePrice) { te.textContent='？ 円（スーパーでかくにん！）'; te.style.color='#E53935'; }
   else             { te.textContent=yen(S.total); te.style.color=''; }
@@ -718,7 +828,7 @@ function goToSupermarket() {
     const eHere    = shuffle(here.filter(p=>!needed.has(p.id)));
     S.cornerItems[c.id] = shuffle([...nHere, ...eHere.slice(0, Math.max(0,6-nHere.length))]);
   });
-  if (S.mode==='easy' || S.mode==='veryeasy') {
+  if (S.mode==='easy' || S.mode==='veryeasy' || S.mode==='heaven') {
     const extraN = S.mode==='veryeasy' ? 5 : 9;
     const extras = shuffle(PRODUCTS.filter(p=>!needed.has(p.id))).slice(0,extraN);
     S.marketItems = shuffle([...S.list.map(i=>i.product), ...extras]);
@@ -736,7 +846,7 @@ function renderCorners() {
   document.getElementById('corners-grid').innerHTML = CORNERS.map(c=>{
     const nHere      = S.list.filter(i=>i.product.corner===c.id);
     const allDone    = nHere.length>0 && nHere.every(i=>coll.has(i.product.id));
-    const showExclam = nHere.length>0 && !allDone && S.mode!=='super';
+    const showExclam = nHere.length>0 && !allDone && S.mode!=='super' && S.mode!=='hell';
     return `
       <div class="corner-card ${allDone?'corner-done':''}" onclick="enterCorner('${c.id}')">
         ${showExclam ? '<div class="corner-badge">！</div>' : ''}
@@ -763,7 +873,7 @@ function renderMarket() {
   const coll = new Set(S.basket);
   // header
   const hdr = document.getElementById('market-header');
-  if (S.mode!=='easy' && S.mode!=='veryeasy' && S.currentCorner) {
+  if (S.mode!=='easy' && S.mode!=='veryeasy' && S.mode!=='heaven' && S.currentCorner) {
     const c = CORNERS.find(x=>x.id===S.currentCorner);
     hdr.innerHTML = `
       <button class="market-back-btn" onclick="showCorners()">← もどる</button>
@@ -791,7 +901,7 @@ function renderMarket() {
     : S.basket.map(id=>PRODUCTS.find(p=>p.id===id)?.emoji||'').join(' ');
   // register btn (easy only)
   const rb = document.getElementById('to-register-btn');
-  rb.style.display = ((S.mode==='easy'||S.mode==='veryeasy') && S.list.every(i=>coll.has(i.product.id))) ? 'block' : 'none';
+  rb.style.display = ((S.mode==='easy'||S.mode==='veryeasy'||S.mode==='heaven') && S.list.every(i=>coll.has(i.product.id))) ? 'block' : 'none';
 }
 function collectItem(pid) {
   const needed = new Set(S.list.map(i=>i.product.id));
@@ -809,8 +919,12 @@ function goToRegister() {
 
   // 20%の確率で割引（むずかしい・ちょうむずかしいのみ）
   S.discount = 0;
-  if ((S.mode==='hard' || S.mode==='super') && Math.random() < 0.20) {
-    const opts = [-10, -30, -50, -100];
+  const opts = [-10, -30, -50, -100];
+  if (S.mode==='hell' && Math.random() < 0.40) {
+    // じごく：40%
+    S.discount = opts[Math.floor(Math.random()*opts.length)];
+  } else if ((S.mode==='hard' || S.mode==='super') && Math.random() < 0.20) {
+    // むずかしい・ちょうむずかしい：20%
     S.discount = opts[Math.floor(Math.random()*opts.length)];
   }
   const finalTotal = S.total + S.discount;
@@ -859,7 +973,7 @@ function togglePay(i) {
   document.getElementById('insufficient-msg').style.display='none';
 }
 function backFromRegister() {
-  (S.mode==='easy' || S.mode==='veryeasy') ? showScreen('screen-market') : showCorners();
+  (S.mode==='easy' || S.mode==='veryeasy' || S.mode==='heaven') ? showScreen('screen-market') : showCorners();
 }
 function processPayment() {
   const paid = S.payIdxs.reduce((s,i)=>s+S.wallet[i],0);
@@ -867,8 +981,8 @@ function processPayment() {
   if (paid<finalTotal) { document.getElementById('insufficient-msg').style.display='block'; return; }
   S.paidAmt=paid; S.expectedChange=paid-finalTotal; S.changeStr='';
 
-  // ちょうかんたん：おつり画面をスキップして即せいこう
-  if (S.mode==='veryeasy') {
+  // ちょうかんたん・てんごく：おつり画面をスキップして即せいこう
+  if (S.mode==='veryeasy' || S.mode==='heaven') {
     showResult(true, S.expectedChange);
     return;
   }
@@ -924,8 +1038,8 @@ function showResult(ok, entered) {
         ? `しなもの：<strong>${yen(S.total)}</strong><br>わりびき：<strong>${S.discount}円</strong> 🎉<br>ごうけい：<strong>${yen(S.total+S.discount)}</strong><br>`
         : `かいもの：<strong>${yen(S.total+S.discount)}</strong><br>`) +
       `しはらい：<strong>${yen(S.paidAmt)}</strong><br>おつり：<strong>${yen(S.expectedChange)}</strong><br><br>` +
-      (S.mode==='veryeasy' ? '🌟 ちゃんとはらえたね！' : '🌟 じょうずにかいものできたね！');
-    if (S.mode==='veryeasy') {
+      ((S.mode==='veryeasy'||S.mode==='heaven') ? '🌟 ちゃんとはらえたね！' : '🌟 じょうずにかいものできたね！');
+    if (S.mode==='veryeasy' || S.mode==='heaven') {
       tmr.style.display='none';
     } else {
       const r = timeRating(S.timerElapsed);
