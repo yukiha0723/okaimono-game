@@ -262,6 +262,72 @@ body {
 .confetti-piece { position:absolute; top:-20px; animation:confettiFall linear forwards; }
 @keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1;} 80%{opacity:1;} 100%{transform:translateY(110vh) rotate(720deg) scale(.5);opacity:0;} }
 
+/* EFFICIENCY RATING */
+.eff-box {
+  background: rgba(255,255,255,.3); border-radius:14px;
+  padding:10px 14px; margin-top:10px; text-align:center;
+  font-weight:800; line-height:1.6; color:white;
+}
+.eff-box .eff-emoji { font-size:1.6em; }
+.eff-box .eff-title { font-size:1.1em; }
+.eff-box .eff-msg   { font-size:.85em; font-weight:600; opacity:.95; }
+
+/* PERFECT BANNER */
+.perfect-banner {
+  position:fixed; inset:0; display:none; align-items:center;
+  justify-content:center; z-index:11000; pointer-events:none;
+  flex-direction:column; gap:10px;
+}
+.perfect-banner.show { display:flex; }
+.perfect-text {
+  font-size:4.2em; font-weight:900; line-height:1;
+  background: linear-gradient(45deg,#FFD700,#FF6B35,#FFD700,#4ECDC4,#FFD700,#FF80AB);
+  background-size:400% 400%;
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; color:transparent;
+  animation: rainbowSlide 1.5s linear infinite, perfectZoom .7s cubic-bezier(.34,1.78,.64,1);
+  filter: drop-shadow(0 0 24px rgba(255,215,0,.9));
+  letter-spacing:.05em;
+}
+.perfect-sub {
+  font-size:1.4em; font-weight:800; color:#FFD700;
+  text-shadow: 0 0 10px rgba(255,215,0,.8), 2px 3px 0 rgba(0,0,0,.3);
+  animation: perfectZoom .7s .15s cubic-bezier(.34,1.78,.64,1) both;
+}
+@keyframes rainbowSlide { 0%{background-position:0% 50%;} 100%{background-position:400% 50%;} }
+@keyframes perfectZoom {
+  0%   { transform:scale(0) rotate(-20deg); opacity:0; }
+  60%  { transform:scale(1.3) rotate(8deg); opacity:1; }
+  100% { transform:scale(1) rotate(0); opacity:1; }
+}
+.perfect-banner.fade { animation: perfectFade 1s .8s forwards; }
+@keyframes perfectFade { to { opacity:0; transform:translateY(-30px); } }
+
+/* PERFECT FLASH */
+.perfect-flash {
+  position:fixed; inset:0; z-index:10800; pointer-events:none;
+  background: radial-gradient(circle, rgba(255,215,0,.85) 0%, rgba(255,107,53,.4) 50%, transparent 80%);
+  opacity:0; display:none;
+}
+.perfect-flash.go { display:block; animation: perfFlash .6s ease-out; }
+@keyframes perfFlash { 0%{opacity:0;} 30%{opacity:1;} 100%{opacity:0;} }
+
+/* FIREWORKS */
+.firework-particle {
+  position:fixed; width:8px; height:8px; border-radius:50%;
+  pointer-events:none; z-index:10500;
+  animation: fwFly 1.3s ease-out forwards;
+}
+@keyframes fwFly {
+  0%   { transform:translate(0,0) scale(1);   opacity:1; }
+  70%  { opacity:1; }
+  100% { transform:translate(var(--tx),calc(var(--ty) + 80px)) scale(.2); opacity:0; }
+}
+.firework-particle::after {
+  content:''; position:absolute; inset:-2px; border-radius:50%;
+  background:inherit; filter:blur(4px); opacity:.7;
+}
+
 /* MUTE BUTTON */
 .mute-btn {
   position:fixed; top:10px; right:10px; z-index:10000;
@@ -286,6 +352,13 @@ body {
 <body>
 <button id="mute-btn" class="mute-btn" onclick="toggleMute()" title="BGM ON/OFF">🔊</button>
 <button id="home-btn" class="home-btn" onclick="goToTitle()" title="タイトルにもどる">🏠</button>
+
+<!-- PERFECT FX -->
+<div id="perfect-flash" class="perfect-flash"></div>
+<div id="perfect-banner" class="perfect-banner">
+  <div class="perfect-text">PERFECT!</div>
+  <div class="perfect-sub">🎯 おかねぴったり！</div>
+</div>
 
 <!-- MOM POPUP (てんごく) -->
 <div id="mom-popup" class="mom-popup-overlay">
@@ -693,11 +766,112 @@ function timeRating(s) {
 }
 
 // ── CONFETTI ──────────────────────────────────────────
-function launchConfetti() {
+// ── 評価（おつり最小化） ─────────────────────────────
+function efficiencyRating(change, paid) {
+  if (paid <= 0) return null;
+  const ratio = change / paid;
+  if (change === 0) {
+    return { isPerfect:true, emoji:'🎯', title:'パーフェクト！',
+             msg:'おかいもののプロ！おかねピッタリ！' };
+  }
+  if (ratio <= 0.10) return { isPerfect:false, emoji:'🌟', title:'すばらしい！',
+                              msg:'おつりがすくない！じょうずにえらべたね' };
+  if (ratio <= 0.25) return { isPerfect:false, emoji:'👍', title:'じょうず！',
+                              msg:'おさいふのつかいかた、いいかんじ' };
+  if (ratio <= 0.50) return { isPerfect:false, emoji:'😊', title:'せいかい！',
+                              msg:'もうすこし　ちいさいおかねでもよかったかも' };
+  return { isPerfect:false, emoji:'🤔', title:'せいかい！',
+           msg:'おかねを　もっていきすぎたね！　つぎはちいさいおかねでチャレンジ！' };
+}
+
+// ── PERFECT 演出 ─────────────────────────────────────
+function spawnFirework(cx, cy) {
+  const colors = ['#FFD700','#FF6B35','#4ECDC4','#FF80AB','#9C6FDE','#56C870','#FFFFFF'];
+  const color  = colors[ri(0, colors.length-1)];
+  const N = 18;
+  for (let i = 0; i < N; i++) {
+    const angle = (Math.PI * 2 * i) / N + Math.random()*0.2;
+    const dist  = 90 + Math.random() * 80;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist;
+    const p = document.createElement('div');
+    p.className = 'firework-particle';
+    p.style.left = cx + 'px';
+    p.style.top  = cy + 'px';
+    p.style.background = color;
+    p.style.boxShadow  = `0 0 12px ${color}, 0 0 24px ${color}`;
+    p.style.setProperty('--tx', tx + 'px');
+    p.style.setProperty('--ty', ty + 'px');
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+function celebratePerfect() {
+  // 1. フラッシュ
+  const flash = document.getElementById('perfect-flash');
+  flash.classList.remove('go');
+  void flash.offsetWidth; // reflow
+  flash.classList.add('go');
+
+  // 2. PERFECT! バナー
+  const banner = document.getElementById('perfect-banner');
+  banner.classList.remove('show','fade');
+  void banner.offsetWidth;
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.add('fade'), 50);
+  setTimeout(() => banner.classList.remove('show','fade'), 2400);
+
+  // 3. 花火（6発）
+  const W = window.innerWidth, H = window.innerHeight;
+  const positions = [
+    [W*0.2, H*0.30], [W*0.8, H*0.30], [W*0.5, H*0.20],
+    [W*0.3, H*0.55], [W*0.7, H*0.55], [W*0.5, H*0.45],
+  ];
+  positions.forEach((pos, i) => {
+    setTimeout(() => spawnFirework(pos[0], pos[1]), 150 + i*180);
+  });
+
+  // 4. 紙吹雪（3倍量）
+  launchConfetti(3);
+
+  // 5. 特別ファンファーレ
+  playPerfectFanfare();
+}
+
+function playPerfectFanfare() {
+  if (bgmMuted) return;
+  if (!ensureAudio()) return;
+  const t0 = audioCtx.currentTime + 0.05;
+  const beat = 0.11;
+  // 上昇アルペジオ（長め）
+  const arp = ['C5','E5','G5','C5','E5','G5','C5'];
+  arp.forEach((n,i) => playTone(NOTE[n], t0 + i*beat, beat*0.95, 'square', 0.10));
+  // 高音きらめき
+  const sparkStart = t0 + arp.length*beat;
+  const sparks = ['G5','A5','B5','C5','B5','A5','B5'];
+  sparks.forEach((n,i) => {
+    const f = NOTE[n] * (i<4 ? 2 : 2); // 1オクターブ上
+    playTone(f, sparkStart + i*0.06, 0.10, 'triangle', 0.06);
+  });
+  // 大和音ジャーン（長め）
+  const chordStart = sparkStart + sparks.length*0.06 + 0.05;
+  ['C5','E5','G5','C5'].forEach((n,i) => {
+    const f = NOTE[n] * (i===3 ? 2 : 1);
+    playTone(f, chordStart, 1.4, 'square', 0.09);
+  });
+  // 追加の高音（キラキラ）
+  ['E5','G5'].forEach((n,i) => {
+    playTone(NOTE[n]*2, chordStart + i*0.15, 1.2, 'triangle', 0.05);
+  });
+}
+
+function launchConfetti(intensity) {
   const ct = document.getElementById('confetti-container');
   ct.innerHTML = '';
   const colors=['#FF6B35','#FFD93D','#4ECDC4','#56C870','#9C6FDE','#FF6B6B','#4FC3F7','#F06292'];
-  for (let i=0; i<110; i++) {
+  const N = 110 * (intensity || 1);
+  for (let i=0; i<N; i++) {
     const el = document.createElement('div');
     el.className = 'confetti-piece';
     const sz = 6+Math.random()*10;
@@ -1042,12 +1216,19 @@ function showResult(ok, entered) {
     ttl.textContent = 'せいかい！'; ttl.classList.add('rainbow');
     sts.style.display = 'block';
     sts.textContent = S.expectedChange===0 ? '⭐⭐⭐ ピッタリ！' : '⭐⭐⭐';
+    // 評価（てんごく以外）
+    const eff = (S.mode !== 'heaven') ? efficiencyRating(S.expectedChange, S.paidAmt) : null;
+    const effHtml = eff
+      ? `<div class="eff-box"><div class="eff-emoji">${eff.emoji}</div><div class="eff-title">${eff.title}</div><div class="eff-msg">${eff.msg}</div></div>`
+      : '';
+
     box.innerHTML =
       (S.discount!==0
         ? `しなもの：<strong>${yen(S.total)}</strong><br>わりびき：<strong>${S.discount}円</strong> 🎉<br>ごうけい：<strong>${yen(S.total+S.discount)}</strong><br>`
         : `かいもの：<strong>${yen(S.total+S.discount)}</strong><br>`) +
-      `しはらい：<strong>${yen(S.paidAmt)}</strong><br>おつり：<strong>${yen(S.expectedChange)}</strong><br><br>` +
-      ((S.mode==='veryeasy'||S.mode==='heaven') ? '🌟 ちゃんとはらえたね！' : '🌟 じょうずにかいものできたね！');
+      `しはらい：<strong>${yen(S.paidAmt)}</strong><br>おつり：<strong>${yen(S.expectedChange)}</strong>` +
+      effHtml +
+      `<br>${(S.mode==='veryeasy'||S.mode==='heaven') ? '🌟 ちゃんとはらえたね！' : '🌟 じょうずにかいものできたね！'}`;
     if (S.mode==='veryeasy' || S.mode==='heaven') {
       tmr.style.display='none';
     } else {
@@ -1056,8 +1237,14 @@ function showResult(ok, entered) {
       tmr.innerHTML=`⏱ タイム: <strong>${fmtTime(S.timerElapsed)}</strong>　${r.stars}<br>${r.msg}`;
     }
     fal.style.display='none';
-    launchConfetti();
-    playSuccessFanfare();
+
+    // パーフェクトなら派手演出、それ以外は通常
+    if (eff && eff.isPerfect) {
+      celebratePerfect();
+    } else {
+      launchConfetti();
+      playSuccessFanfare();
+    }
   } else {
     sc.style.background = 'linear-gradient(160deg,#B71C1C,#E53935)';
     ico.textContent = '😢';
