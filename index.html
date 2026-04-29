@@ -943,10 +943,11 @@ function goToRegister() {
     (S.discount!==0
       ? `<hr class="receipt-divider"><div class="receipt-item discount-line"><span>🎉 わりびき</span><span>${S.discount}円</span></div>`
       : '') +
-    `<hr class="receipt-divider"><div class="receipt-total"><span>ごうけい</span><span>${yen(finalTotal)}</span></div>`;
+    `<hr class="receipt-divider"><div class="receipt-total"><span>ごうけい</span><span>${S.mode==='hell' ? '？ 円' : yen(finalTotal)}</span></div>`;
 
   renderPayChips();
-  document.getElementById('pay-hint').textContent = `${yen(finalTotal)}いじょうえらんでね`;
+  document.getElementById('pay-hint').textContent =
+    S.mode==='hell' ? 'じぶんでけいさんしてえらんでね！' : `${yen(finalTotal)}いじょうえらんでね`;
   document.getElementById('insufficient-msg').style.display = 'none';
   showScreen('screen-register');
 }
