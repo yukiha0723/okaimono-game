@@ -1521,7 +1521,7 @@ function renderMission() {
     const got   = STORY.collectedIds.length;
     const total = STORY.recipe.ingredients.length;
     setBubble('mission-chara-text',
-      `${PROFILE.name}、${STORY.recipe.name}の しょくざい（${got+1}/${total}）を かってきてね！`);
+      `${PROFILE.name}、これをかってきてね！（${got+1}/${total}）\nなにができるかな？🍳`);
   } else {
     setBubble('mission-chara-text', `${PROFILE.name}、これをかってきてね！`);
   }
