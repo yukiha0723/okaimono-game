@@ -498,6 +498,52 @@ body {
   border:8px solid transparent; border-right-color:rgba(255,255,255,.25);
 }
 
+/* STORY COLLECTION */
+#screen-story-collection {
+  background: linear-gradient(160deg,#E8F5E9,#F1F8E9);
+  align-items:center;
+}
+.collection-header {
+  background: linear-gradient(135deg,#56C870,#2E7D32);
+  margin:-20px -20px 20px; padding:20px; color:white; text-align:center;
+}
+.collection-grid { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:16px; }
+.collection-item {
+  background:white; border-radius:16px; padding:14px 10px;
+  text-align:center; width:90px; box-shadow:0 4px 14px rgba(0,0,0,.1);
+  transition:transform .3s;
+}
+.collection-item.got { border:3px solid #56C870; animation:itemPop .4s cubic-bezier(.34,1.56,.64,1); }
+.collection-item img { width:56px; height:56px; object-fit:contain; }
+.collection-item .c-name { font-size:.72em; font-weight:700; color:#555; margin-top:4px; }
+.collection-item .c-question { font-size:2.5em; line-height:1; }
+@keyframes itemPop { 0%{transform:scale(0);} 60%{transform:scale(1.2);} 100%{transform:scale(1);} }
+.progress-bar-wrap { width:100%; background:rgba(0,0,0,.1); border-radius:20px; height:14px; margin-bottom:6px; }
+.progress-bar { background:linear-gradient(90deg,#56C870,#FFD93D); border-radius:20px; height:100%; transition:width .5s ease; }
+
+/* STORY COMPLETE */
+#screen-story-complete {
+  background: linear-gradient(160deg,#FF6B35,#FFD93D);
+  align-items:center; justify-content:center; text-align:center; gap:14px; padding:30px 20px;
+}
+.complete-recipe-img { width:200px; height:200px; object-fit:contain; animation:popIn .7s cubic-bezier(.34,1.56,.64,1); }
+.complete-title { font-size:2em; font-weight:800; color:white; text-shadow:2px 3px 0 rgba(0,0,0,.15); }
+.complete-mom-row { display:flex; align-items:flex-end; justify-content:center; gap:12px; }
+.complete-mom-row img { width:100px; height:100px; object-fit:contain; }
+.complete-bubble {
+  background:white; border-radius:16px; padding:12px 16px;
+  font-size:.95em; font-weight:800; color:#333; line-height:1.7;
+  position:relative; text-align:left; max-width:180px;
+}
+.complete-bubble::before {
+  content:''; position:absolute; left:-10px; bottom:16px;
+  border:8px solid transparent; border-right-color:white;
+}
+.complete-dinner {
+  background:rgba(255,255,255,.25); border-radius:16px; padding:14px 20px;
+  font-size:1.1em; font-weight:800; color:white; width:100%;
+}
+
 /* MISC */
 .mt-auto  { margin-top:auto; }
 .w-full   { width:100%; }
@@ -730,6 +776,39 @@ body {
   </div>
 </div>
 
+<!-- STORY: COLLECTION -->
+<div id="screen-story-collection" class="screen">
+  <div class="collection-header">
+    <h2>🧺 あつめた　しょくざい</h2>
+    <div style="margin-top:8px">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="story-progress-bar" style="width:0%"></div>
+      </div>
+      <div style="font-size:.85em;opacity:.9;margin-top:4px" id="story-progress-text">0 / 0</div>
+    </div>
+  </div>
+  <div class="collection-grid" id="collection-grid"></div>
+  <div style="display:flex;align-items:flex-end;gap:12px;margin-top:8px;width:100%">
+    <img id="collection-mom-img" src="chara_mom_normal.png" alt="" style="width:72px;height:72px;object-fit:contain;flex-shrink:0">
+    <div class="chara-bubble"><span id="collection-mom-speech">つぎもいってきてね！</span></div>
+  </div>
+  <button class="btn btn-green w-full" id="story-next-btn" onclick="startStoryShop()" style="margin-top:12px">つぎの　しょくざいを　かいにいく！ 🛒</button>
+  <button class="btn btn-purple w-full" id="story-finish-btn" onclick="showStoryComplete()" style="margin-top:8px;display:none">りょうりをつくる！ 🍳</button>
+</div>
+
+<!-- STORY: COMPLETE -->
+<div id="screen-story-complete" class="screen">
+  <div class="complete-title" id="complete-title">🎉 かんせい！</div>
+  <img id="complete-recipe-img" src="" alt="" class="complete-recipe-img">
+  <div class="complete-mom-row">
+    <div class="complete-bubble" id="complete-bubble">いっしょに　つくってみる？🍳</div>
+    <img src="chara_mom_happy.png" alt="">
+  </div>
+  <div class="complete-dinner">🍽 いっしょに　つくってみる？🍳</div>
+  <button class="btn btn-green w-full" onclick="startGame('heaven')">もういちど ☁️</button>
+  <button class="btn btn-gray w-full" onclick="showScreen('screen-title')" style="margin-top:8px">タイトルにもどる 🏠</button>
+</div>
+
 <!-- TIME ATTACK -->
 <div id="screen-timeattack" class="screen">
   <div class="ta-header">
@@ -896,6 +975,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ── DATA ──────────────────────────────────────────────
 const PRODUCTS = [
+  // condiments (調味料)
+  {id:'ketchup', name:'ケチャップ',   emoji:'🍅', price:198, unit:'1ぽん',   corner:'instant', img:'items/item_ketchup.png'},
+  {id:'mayo',    name:'マヨネーズ',   emoji:'🫙', price:228, unit:'1ぽん',   corner:'instant', img:'items/item_mayo.png'},
+  {id:'miso',    name:'みそ',         emoji:'🟤', price:248, unit:'1パック', corner:'instant', img:'items/item_miso.png'},
+  {id:'sugar',   name:'さとう',       emoji:'🍬', price:148, unit:'1ふくろ', corner:'instant', img:'items/item_sugar.png'},
+  {id:'flour',   name:'こむぎこ',     emoji:'🌾', price:168, unit:'1ふくろ', corner:'instant', img:'items/item_flour.png'},
+  {id:'shoyu',   name:'しょうゆ',     emoji:'🫗', price:178, unit:'1ぽん',   corner:'instant', img:'items/item_shoyu.png'},
   // drink/dairy
   {id:'milk',    name:'ぎゅうにゅう',   emoji:'🥛', price:218, unit:'1本',    corner:'drink'},
   {id:'juice',   name:'ジュース',       emoji:'🧃', price:198, unit:'1パック', corner:'drink'},
@@ -938,6 +1024,91 @@ const CORNERS = [
   {id:'instant', name:'かんしょく・レトルト',      emoji:'🍜'},
   {id:'snack',   name:'おかしコーナー',            emoji:'🍫'},
 ];
+
+const RECIPES = [
+  { id:'curry',        name:'カレーライス',    emoji:'🍛', img:'recipes/recipe_curry.png',
+    ingredients:['potato','carrot','curry'] },
+  { id:'hamburg',      name:'ハンバーグ',      emoji:'🍔', img:'recipes/recipe_hamburg.png',
+    ingredients:['egg','ham','ketchup'] },
+  { id:'omurice',      name:'オムライス',      emoji:'🍳', img:'recipes/recipe_omurice.png',
+    ingredients:['egg','ham','corn'] },
+  { id:'potato_salad', name:'ポテトサラダ',    emoji:'🥗', img:'recipes/recipe_potato_salad.png',
+    ingredients:['potato','carrot','mayo'] },
+  { id:'fruit_punch',  name:'フルーツポンチ',  emoji:'🍓', img:'recipes/recipe_fruit_punch.png',
+    ingredients:['apple','banana','mikan'] },
+  { id:'choco_banana', name:'チョコバナナ',    emoji:'🍫', img:'recipes/recipe_choco_banana.png',
+    ingredients:['banana','choco'] },
+  { id:'corn_soup',    name:'コーンスープ',    emoji:'🌽', img:'recipes/recipe_corn_soup.png',
+    ingredients:['corn','milk','butter'] },
+  { id:'french_toast', name:'フレンチトースト',emoji:'🍞', img:'recipes/recipe_french_toast.png',
+    ingredients:['bread','egg','sugar'] },
+  { id:'hotcake',      name:'ホットケーキ',    emoji:'🥞', img:'recipes/recipe_hotcake.png',
+    ingredients:['flour','egg','milk'] },
+  { id:'miso_soup',    name:'みそしる',        emoji:'🍲', img:'recipes/recipe_miso_soup.png',
+    ingredients:['tofu','miso'] },
+];
+
+// ── STORY STATE ───────────────────────────────────────
+let STORY = {};
+
+function getIngredientProduct(id) {
+  return PRODUCTS.find(p => p.id === id);
+}
+
+function startStoryShop() {
+  startGame('heaven');
+}
+
+function renderStoryCollection() {
+  const { recipe, collectedIds } = STORY;
+  const total = recipe.ingredients.length;
+  const got   = collectedIds.length;
+
+  document.getElementById('story-progress-bar').style.width = `${(got/total)*100}%`;
+  document.getElementById('story-progress-text').textContent = `${got} / ${total}`;
+
+  document.getElementById('collection-grid').innerHTML = recipe.ingredients.map(id => {
+    const p    = getIngredientProduct(id);
+    const done = collectedIds.includes(id);
+    const imgSrc = p.img ? `<img src="${p.img}" alt="">` : `<div style="font-size:2.5em">${p.emoji}</div>`;
+    return `<div class="collection-item ${done ? 'got' : ''}">
+      ${done ? (p.img ? `<img src="${p.img}" alt="" style="width:56px;height:56px;object-fit:contain">` : `<div style="font-size:2.5em">${p.emoji}</div>`) : '<div class="c-question">？</div>'}
+      <div class="c-name">${done ? p.name : '？？？'}</div>
+    </div>`;
+  }).join('');
+
+  const allDone = got >= total;
+  if (allDone) {
+    setBubble('collection-mom-speech', `${PROFILE.name}、ぜんぶそろったよ！りょうりをつくろう！🍳`);
+    document.getElementById('collection-mom-img').src = 'chara_mom_happy.png';
+    document.getElementById('story-next-btn').style.display = 'none';
+    document.getElementById('story-finish-btn').style.display = 'block';
+  } else {
+    const next = getIngredientProduct(recipe.ingredients[got]);
+    setBubble('collection-mom-speech', `つぎは　${next ? next.name : ''}を　かってきてね！`);
+    document.getElementById('collection-mom-img').src = 'chara_mom_normal.png';
+    document.getElementById('story-next-btn').style.display = 'block';
+    document.getElementById('story-finish-btn').style.display = 'none';
+  }
+
+  showScreen('screen-story-collection');
+}
+
+function showStoryComplete() {
+  const { recipe } = STORY;
+  document.getElementById('complete-recipe-img').src = recipe.img;
+  document.getElementById('complete-title').textContent = `🎉 ${recipe.name}の　かんせい！`;
+  const completeSpeeches = [
+    `${PROFILE.name}、ありがとう！いっしょに　つくってみる？🍳`,
+    `ぜんぶかってきてくれたね！さすが${PROFILE.name}💕`,
+    `${PROFILE.name}のおかげで　りょうりができるよ！🍳`,
+    `じょうずにかえたね！いっしょに　つくろう💕`,
+  ];
+  setBubble('complete-bubble', completeSpeeches[ri(0, completeSpeeches.length-1)], '#FF6B35');
+  launchConfetti();
+  playSuccessFanfare();
+  showScreen('screen-story-complete');
+}
 
 // ── STATE ─────────────────────────────────────────────
 let S = {};
@@ -1242,6 +1413,21 @@ function launchConfetti(intensity) {
   setTimeout(() => ct.innerHTML='', 4000);
 }
 
+// ── HEAVEN STORY SAVE ────────────────────────────────
+function loadHeavenStory() {
+  try {
+    const saved = localStorage.getItem('okaimono-heaven-story');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return null;
+}
+function saveHeavenStory(data) {
+  try { localStorage.setItem('okaimono-heaven-story', JSON.stringify(data)); } catch(e) {}
+}
+function clearHeavenStory() {
+  try { localStorage.removeItem('okaimono-heaven-story'); } catch(e) {}
+}
+
 // ── START ─────────────────────────────────────────────
 function startGame(mode) {
   resetState(); S.mode = mode;
@@ -1253,6 +1439,31 @@ function startGame(mode) {
   else if (mode==='hard')    { n=ri(4,6); S.hidePrice=false; }
   else if (mode==='super')   { n=ri(3,5); S.hidePrice=true;  }
   else if (mode==='hell')    { n=ri(4,6); S.hidePrice=true;  }
+
+  // てんごくモード：ストーリー進行
+  if (mode === 'heaven') {
+    let save = loadHeavenStory();
+    if (!save) {
+      // 新しいレシピをランダムに選択
+      const lastId = STORY.recipe ? STORY.recipe.id : null;
+      const pool = RECIPES.filter(r => r.id !== lastId);
+      const recipe = pool[ri(0, pool.length - 1)];
+      save = { recipeId: recipe.id, collectedIds: [] };
+      saveHeavenStory(save);
+    }
+    const recipe = RECIPES.find(r => r.id === save.recipeId);
+    const nextIngId = recipe.ingredients.find(id => !save.collectedIds.includes(id));
+    const product = getIngredientProduct(nextIngId);
+    STORY = { recipe, collectedIds: [...save.collectedIds], storyMode: 'heaven' };
+    S.list  = [{ product, qty: 1 }];
+    S.total = product.price;
+    S.wallet = autoFillForHeaven(S.total);
+    S.storyMode = true;
+    renderMission();
+    showScreen('screen-mission');
+    return;
+  }
+
   S.list  = shuffle(PRODUCTS).slice(0,n).map(p=>({product:p,qty:1}));
   S.total = S.list.reduce((s,i)=>s+i.product.price*i.qty,0);
 
@@ -1305,7 +1516,15 @@ function closeMomPopup() {
 function renderMission() {
   // キャラ吹き出し
   document.getElementById('mission-chara-img').src = charaImg('normal');
-  setBubble('mission-chara-text', `${PROFILE.name}、これをかってきてね！`);
+  // てんごくストーリー：進捗つきのセリフ
+  if (S.storyMode && STORY.storyMode === 'heaven') {
+    const got   = STORY.collectedIds.length;
+    const total = STORY.recipe.ingredients.length;
+    setBubble('mission-chara-text',
+      `${PROFILE.name}、${STORY.recipe.name}の しょくざい（${got+1}/${total}）を かってきてね！`);
+  } else {
+    setBubble('mission-chara-text', `${PROFILE.name}、これをかってきてね！`);
+  }
   document.getElementById('mission-subtitle').textContent =
     S.hidePrice ? 'ねだんをよそうして　おかねをもっていこう！🔥' : 'このしなものをかってきてね！';
   document.getElementById('shopping-list').innerHTML = S.list.map(({product:p,qty})=>`
@@ -1323,8 +1542,8 @@ function renderMission() {
 
 // ── WALLET ────────────────────────────────────────────
 function goToWallet() {
-  // てんごく：おさいふ画面をスキップして、おかあさんポップアップ
-  if (S.mode === 'heaven') { showMomPopup(); return; }
+  // ストーリーモード・てんごく：おかあさんポップアップを表示
+  if (S.storyMode || S.mode === 'heaven') { showMomPopup(); return; }
 
   const te = document.getElementById('wallet-target');
   if (S.hidePrice) { te.textContent='？ 円（スーパーでかくにん！）'; te.style.color='#E53935'; }
@@ -1440,9 +1659,12 @@ function renderMarket() {
   const bs = document.getElementById('basket-status');
   if (bs) bs.textContent = S.basket.length===0 ? 'まだなにもない'
     : S.basket.map(id=>PRODUCTS.find(p=>p.id===id)?.emoji||'').join(' ');
-  // register btn (easy only)
+  // register btn
   const rb = document.getElementById('to-register-btn');
-  rb.style.display = ((S.mode==='easy'||S.mode==='veryeasy'||S.mode==='heaven') && S.list.every(i=>coll.has(i.product.id))) ? 'block' : 'none';
+  const canRegister = (S.mode==='easy'||S.mode==='veryeasy'||S.mode==='heaven'||S.storyMode)
+    && S.list.length > 0
+    && S.list.every(i=>i.product && coll.has(i.product.id));
+  rb.style.display = canRegister ? 'block' : 'none';
 }
 function collectItem(pid) {
   const needed = new Set(S.list.map(i=>i.product.id));
@@ -1660,6 +1882,20 @@ function taShowResult() {
 
 // ── RESULT ────────────────────────────────────────────
 function showResult(ok, entered) {
+  // ストーリーモード：正解したら進行を更新
+  if (S.storyMode && ok) {
+    const ingId = STORY.recipe.ingredients.find(id => !STORY.collectedIds.includes(id));
+    STORY.collectedIds.push(ingId);
+    saveHeavenStory({ recipeId: STORY.recipe.id, collectedIds: STORY.collectedIds });
+    const allDone = STORY.collectedIds.length >= STORY.recipe.ingredients.length;
+    if (allDone) {
+      clearHeavenStory();
+      showStoryComplete();
+    } else {
+      renderStoryCollection();
+    }
+    return;
+  }
   const sc  = document.getElementById('screen-result');
   const ico = document.getElementById('result-icon');
   const ttl = document.getElementById('result-title');
