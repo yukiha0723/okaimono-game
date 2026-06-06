@@ -39,6 +39,7 @@ body {
 .btn-pink   { background: #FF80AB; box-shadow: 0 5px 0 #C94F7C; }
 .btn-sky    { background: linear-gradient(135deg,#81D4FA,#4FC3F7); box-shadow: 0 5px 0 #0288D1; }
 .btn-dark   { background: linear-gradient(135deg,#37474F,#1A1A2E); color:#FFCDD2; box-shadow: 0 5px 0 #000; }
+.btn-yellow { background: linear-gradient(135deg,#FFD93D,#FFB300); color:#5D1A00; box-shadow: 0 5px 0 #CC8800; }
 
 /* HOME BUTTON */
 .home-btn {
@@ -351,6 +352,152 @@ body {
 .discount-line { color:#56C870; font-weight:800; }
 .discount-line span:last-child { color:#43A047; }
 
+/* TIME ATTACK */
+#screen-timeattack { background: linear-gradient(160deg,#1A1A2E,#3949AB); align-items:center; }
+.ta-header { text-align:center; color:white; margin-bottom:10px; }
+.ta-header h2 { font-size:1.6em; font-weight:800; text-shadow:2px 3px 0 rgba(0,0,0,.3); }
+.ta-countdown {
+  background: rgba(255,255,255,.15); border-radius:20px;
+  padding:10px 30px; font-size:2.4em; font-weight:800; color:white;
+  letter-spacing:4px; margin-bottom:12px;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);
+}
+.ta-countdown.danger { color:#FF6B6B; animation:dangPulse .5s ease infinite; }
+@keyframes dangPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.06);} }
+.ta-score-row { display:flex; gap:14px; margin-bottom:14px; width:100%; }
+.ta-score-box {
+  flex:1; background:rgba(255,255,255,.15); border-radius:16px;
+  padding:10px; text-align:center; color:white;
+}
+.ta-score-box .ta-score-label { font-size:.75em; opacity:.85; }
+.ta-score-box .ta-score-val   { font-size:2em; font-weight:800; }
+.ta-problem-card {
+  background:white; border-radius:20px; padding:18px;
+  width:100%; margin-bottom:14px;
+  box-shadow:0 6px 24px rgba(0,0,0,.25); text-align:center;
+}
+.ta-problem-card .ta-q-label { font-size:.82em; color:#888; font-weight:700; margin-bottom:6px; }
+.ta-problem-card .ta-q-text  { font-size:1.05em; font-weight:800; line-height:2; color:#333; }
+.ta-problem-card .ta-q-paid  { color:#3949AB; font-size:1.2em; }
+.ta-problem-card .ta-q-total { color:#E53935; font-size:1.2em; }
+.ta-answer-display {
+  background:rgba(255,255,255,.18); border-radius:16px;
+  padding:14px 30px; font-size:2em; font-weight:800;
+  color:white; width:100%; text-align:center; margin-bottom:12px;
+  min-height:64px; letter-spacing:2px;
+}
+.ta-feedback {
+  font-size:1.4em; font-weight:800; color:white;
+  min-height:36px; text-align:center; margin-bottom:6px;
+  animation:taFb .3s ease;
+}
+@keyframes taFb { 0%{transform:scale(1.4);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+
+/* RESULT (TIME ATTACK) */
+#screen-ta-result { background:linear-gradient(160deg,#1B5E20,#43A047); align-items:center; justify-content:center; text-align:center; gap:14px; padding:30px 20px; }
+.ta-result-icon  { font-size:90px; animation:popIn .6s cubic-bezier(.34,1.56,.64,1); }
+.ta-result-title { font-size:2.2em; font-weight:800; color:white; text-shadow:2px 3px 0 rgba(0,0,0,.2); }
+.ta-result-grid  { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; }
+.ta-result-cell  { background:rgba(255,255,255,.2); border-radius:16px; padding:14px; color:white; text-align:center; }
+.ta-result-cell .ta-rc-label { font-size:.8em; opacity:.9; }
+.ta-result-cell .ta-rc-val   { font-size:2em; font-weight:800; }
+.ta-best-banner {
+  background:rgba(255,215,0,.25); border:2px solid rgba(255,215,0,.6);
+  border-radius:14px; padding:10px 20px; color:#FFD700;
+  font-size:1.1em; font-weight:800; width:100%;
+}
+
+/* CHARACTER SELECT */
+#screen-chara-select {
+  background: linear-gradient(160deg,#FFD93D,#FF6B35);
+  align-items: center; justify-content: center; text-align: center; gap: 14px;
+}
+#screen-chara-select h2 { color:white; font-size:1.8em; font-weight:800; text-shadow:2px 3px 0 rgba(0,0,0,.15); }
+#screen-chara-select p  { color:rgba(255,255,255,.9); font-size:.95em; font-weight:700; }
+.chara-row { display:flex; gap:20px; justify-content:center; }
+.chara-card {
+  background:rgba(255,255,255,.25); border-radius:24px; padding:16px 20px;
+  cursor:pointer; border:4px solid transparent;
+  transition:transform .15s,border-color .15s;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  user-select:none; -webkit-tap-highlight-color:transparent;
+}
+.chara-card:active  { transform:scale(.96); }
+.chara-card.selected { border-color:white; background:rgba(255,255,255,.45); transform:scale(1.05); }
+.chara-card img { width:110px; height:165px; object-fit:contain; }
+.chara-label { color:white; font-size:1em; font-weight:800; }
+
+/* NAME INPUT */
+#screen-name-input {
+  background: linear-gradient(160deg,#FFD93D,#FF6B35);
+  align-items: center; justify-content: center; gap: 16px;
+}
+.name-card {
+  background:white; border-radius:24px; padding:28px 24px;
+  width:100%; box-shadow:0 8px 32px rgba(0,0,0,.2); text-align:center;
+}
+.name-chara-row { display:flex; align-items:flex-end; justify-content:center; gap:14px; margin-bottom:16px; }
+.name-chara-row img { width:80px; height:120px; object-fit:contain; }
+.name-speech {
+  background:#FFF3E0; border-radius:16px; padding:10px 14px;
+  font-size:.9em; font-weight:700; color:#555; position:relative;
+  max-width:150px; text-align:left; line-height:1.6;
+}
+.name-speech::before {
+  content:''; position:absolute; left:-10px; top:50%; transform:translateY(-50%);
+  border:8px solid transparent; border-right-color:#FFF3E0;
+}
+.name-title  { font-size:1.05em; font-weight:800; color:#555; margin-bottom:10px; }
+.name-input-field {
+  width:100%; border:3px solid #FFD93D; border-radius:16px;
+  padding:14px 16px; font-size:1.4em; font-weight:800;
+  font-family:inherit; text-align:center; color:#333; outline:none;
+  transition:border-color .2s;
+}
+.name-input-field:focus { border-color:#FF6B35; }
+.name-hint { font-size:.8em; color:#AAA; margin-top:6px; }
+
+/* IN-GAME CHARACTER BUBBLE */
+.chara-bubble-wrap {
+  display:flex; align-items:flex-end; gap:10px; margin-bottom:14px;
+  padding:0 4px;
+}
+.chara-bubble-wrap img { width:64px; height:64px; object-fit:contain; flex-shrink:0; }
+.chara-bubble {
+  background:white; border-radius:16px; padding:10px 14px;
+  font-size:.88em; font-weight:700; color:#333; line-height:1.6;
+  box-shadow:0 3px 12px rgba(0,0,0,.1); position:relative; flex:1;
+}
+.chara-bubble::before {
+  content:''; position:absolute; left:-10px; bottom:14px;
+  border:8px solid transparent; border-right-color:white;
+}
+.chara-bubble.happy { border:2px solid #56C870; }
+.chara-bubble.sad   { border:2px solid #FFCCBC; }
+
+/* REGISTER STAFF */
+.staff-bubble-wrap {
+  display:flex; align-items:flex-end; gap:10px; margin-bottom:14px;
+}
+.staff-bubble-wrap img { width:72px; height:72px; object-fit:contain; flex-shrink:0; }
+
+/* RESULT CHARA ROW */
+.result-chara-row {
+  display:flex; align-items:flex-end; justify-content:center; gap:10px;
+  margin-bottom:6px; width:100%;
+}
+.result-chara-row img { width:110px; height:110px; object-fit:contain; }
+#result-mom-img { width:140px; height:140px; }
+.result-mom-bubble {
+  background:rgba(255,255,255,.25); border-radius:16px; padding:10px 14px;
+  font-size:.9em; font-weight:800; color:white; line-height:1.6;
+  position:relative; text-align:left; flex:1;
+}
+.result-mom-bubble::before {
+  content:''; position:absolute; left:-10px; bottom:16px;
+  border:8px solid transparent; border-right-color:rgba(255,255,255,.25);
+}
+
 /* MISC */
 .mt-auto  { margin-top:auto; }
 .w-full   { width:100%; }
@@ -371,7 +518,7 @@ body {
 <!-- MOM POPUP (てんごく) -->
 <div id="mom-popup" class="mom-popup-overlay">
   <div class="mom-popup-card">
-    <div class="mom-popup-emoji">👩</div>
+    <div class="mom-popup-emoji"><img src="chara_mom_happy.png" alt="" style="width:100px;height:100px;object-fit:contain"></div>
     <div class="mom-popup-msg">おかあさんが<br><strong id="mom-amount">0円</strong><br>さいふにいれてくれたよ💕</div>
     <div class="mom-popup-money" id="mom-money-icons"></div>
     <button class="btn btn-blue w-full" onclick="closeMomPopup()">スーパーへ！🏪</button>
@@ -380,12 +527,57 @@ body {
 
 <div id="game">
 
+<!-- CHARACTER SELECT -->
+<div id="screen-chara-select" class="screen active">
+  <span style="font-size:80px;animation:bounce 1.2s ease-in-out infinite;display:block">🛒</span>
+  <h2>おかいものゲーム</h2>
+  <p>だれで　あそぶ？</p>
+  <div class="chara-row">
+    <div class="chara-card" id="card-boy" onclick="selectChara('boy')">
+      <img src="chara_boy_full.png" alt="男の子">
+      <div class="chara-label">おとこのこ</div>
+    </div>
+    <div class="chara-card" id="card-girl" onclick="selectChara('girl')">
+      <img src="chara_girl_full.png" alt="女の子">
+      <div class="chara-label">おんなのこ</div>
+    </div>
+  </div>
+  <button class="btn btn-blue" style="max-width:260px;width:100%" onclick="goToNameInput()">つぎへ →</button>
+</div>
+
+<!-- NAME INPUT -->
+<div id="screen-name-input" class="screen">
+  <div class="name-card">
+    <div class="name-chara-row">
+      <img id="name-chara-img" src="chara_boy_full.png" alt="">
+      <div class="name-speech">なまえを<br>おしえてね！</div>
+    </div>
+    <div class="name-title">なまえをいれてね</div>
+    <input class="name-input-field" id="name-input-field" type="text" maxlength="6" placeholder="なまえ">
+    <div class="name-hint">さいだい6もじ（ひらがながおすすめ）</div>
+  </div>
+  <button class="btn btn-green" style="max-width:260px;width:100%" onclick="saveProfie()">はじめる！ 🎮</button>
+  <button class="btn btn-gray"  style="max-width:260px;width:100%;margin-top:6px" onclick="showScreen('screen-chara-select')">もどる</button>
+</div>
+
 <!-- TITLE -->
-<div id="screen-title" class="screen active">
-  <span class="title-cart">🛒</span>
+<div id="screen-title" class="screen">
+  <div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;width:100%">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <img src="chara_boy_normal.png"  style="width:72px;height:72px;object-fit:contain">
+      <img src="chara_mom_happy.png"   style="width:64px;height:64px;object-fit:contain">
+    </div>
+    <span class="title-cart">🛒</span>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <img src="chara_girl_normal.png"  style="width:72px;height:72px;object-fit:contain">
+      <img src="chara_staff_normal.png" style="width:64px;height:64px;object-fit:contain">
+    </div>
+  </div>
   <h1>おかいものゲーム</h1>
-  <p class="subtitle">おかねのつかいかたを　おぼえよう！</p>
+  <p class="subtitle" id="title-greeting">おかねのつかいかたを　おぼえよう！</p>
   <div class="difficulty-btns">
+    <button class="btn btn-gray"   onclick="showScreen('screen-chara-select')" style="font-size:.9em;padding:10px 20px">👤 キャラをかえる</button>
+    <div style="margin-top:8px"></div>
     <button class="btn btn-sky"    onclick="startGame('heaven')">☁️ てんごく</button>
     <button class="btn btn-pink"   onclick="startGame('veryeasy')">🌸 ちょうかんたん</button>
     <button class="btn btn-green"  onclick="startGame('easy')">かんたん</button>
@@ -393,6 +585,8 @@ body {
     <button class="btn btn-purple" onclick="startGame('hard')">むずかしい</button>
     <button class="btn btn-red"    onclick="startGame('super')">ちょうむずかしい 🔥</button>
     <button class="btn btn-dark"   onclick="startGame('hell')">👹 じごく</button>
+    <div style="margin-top:8px"></div>
+    <button class="btn btn-yellow" onclick="startTimeAttack()">⚡ タイムアタック</button>
   </div>
 </div>
 
@@ -402,6 +596,10 @@ body {
     <div style="font-size:2em">📋</div>
     <h2>きょうのおかいもの</h2>
     <p id="mission-subtitle">このしなものをかってきてね！</p>
+  </div>
+  <div class="chara-bubble-wrap">
+    <img id="mission-chara-img" src="chara_boy_normal.png" alt="">
+    <div class="chara-bubble"><span id="mission-chara-text">これをかってきてね！</span></div>
   </div>
   <div class="shopping-list-card" id="shopping-list"></div>
   <div class="total-card">
@@ -483,6 +681,10 @@ body {
     <h2>レジ</h2>
     <p>しはらうおかねをえらんでね</p>
   </div>
+  <div class="staff-bubble-wrap">
+    <img id="staff-img" src="chara_staff_normal.png" alt="">
+    <div class="chara-bubble"><span id="staff-text">いらっしゃいませ！おかねをえらんでね😊</span></div>
+  </div>
   <div class="receipt-card" id="receipt-card"></div>
   <div class="payment-card">
     <div class="payment-card-title">💰 さいふのなか（えらんでしはらおう）</div>
@@ -528,8 +730,84 @@ body {
   </div>
 </div>
 
+<!-- TIME ATTACK -->
+<div id="screen-timeattack" class="screen">
+  <div class="ta-header">
+    <div style="font-size:2em">⚡</div>
+    <h2>タイムアタック</h2>
+    <p style="font-size:.85em;opacity:.85;margin-top:4px">60びょうでなんもんとけるかな？</p>
+  </div>
+  <div class="ta-countdown" id="ta-countdown">1:00</div>
+  <div class="ta-score-row">
+    <div class="ta-score-box">
+      <div class="ta-score-label">せいかい</div>
+      <div class="ta-score-val" id="ta-correct">0</div>
+    </div>
+    <div class="ta-score-box">
+      <div class="ta-score-label">まちがい</div>
+      <div class="ta-score-val" id="ta-wrong">0</div>
+    </div>
+    <div class="ta-score-box">
+      <div class="ta-score-label">ベスト</div>
+      <div class="ta-score-val" id="ta-best-live">-</div>
+    </div>
+  </div>
+  <div class="ta-problem-card">
+    <div class="ta-q-label">📋 もんだい</div>
+    <div class="ta-q-text" id="ta-q-text"></div>
+  </div>
+  <div class="ta-feedback" id="ta-feedback"></div>
+  <div class="ta-answer-display" id="ta-answer-display">？ 円</div>
+  <div class="numpad">
+    <button class="nk" onclick="taNuminput('7')">7</button>
+    <button class="nk" onclick="taNuminput('8')">8</button>
+    <button class="nk" onclick="taNuminput('9')">9</button>
+    <button class="nk" onclick="taNuminput('4')">4</button>
+    <button class="nk" onclick="taNuminput('5')">5</button>
+    <button class="nk" onclick="taNuminput('6')">6</button>
+    <button class="nk" onclick="taNuminput('1')">1</button>
+    <button class="nk" onclick="taNuminput('2')">2</button>
+    <button class="nk" onclick="taNuminput('3')">3</button>
+    <button class="nk nk-clear" onclick="taNumdelete()">⌫ けす</button>
+    <button class="nk nk-zero" onclick="taNuminput('0')">0</button>
+  </div>
+  <button class="btn btn-green w-full" onclick="taConfirm()" style="margin-top:6px">かくにん ✅</button>
+</div>
+
+<!-- TIME ATTACK RESULT -->
+<div id="screen-ta-result" class="screen">
+  <div class="ta-result-icon">🏆</div>
+  <div class="ta-result-title">タイムアップ！</div>
+  <div class="ta-result-grid">
+    <div class="ta-result-cell">
+      <div class="ta-rc-label">せいかい</div>
+      <div class="ta-rc-val" id="tar-correct">0</div>
+    </div>
+    <div class="ta-result-cell">
+      <div class="ta-rc-label">まちがい</div>
+      <div class="ta-rc-val" id="tar-wrong">0</div>
+    </div>
+    <div class="ta-result-cell">
+      <div class="ta-rc-label">せいかいりつ</div>
+      <div class="ta-rc-val" id="tar-rate">0%</div>
+    </div>
+    <div class="ta-result-cell">
+      <div class="ta-rc-label">ベストスコア</div>
+      <div class="ta-rc-val" id="tar-best">0</div>
+    </div>
+  </div>
+  <div class="ta-best-banner" id="tar-best-banner" style="display:none">🎉 新記録！おめでとう！</div>
+  <button class="btn w-full" onclick="startTimeAttack()">もういちど ⚡</button>
+  <button class="btn btn-gray w-full" onclick="showScreen('screen-title')">タイトルにもどる 🏠</button>
+</div>
+
 <!-- RESULT -->
 <div id="screen-result" class="screen">
+  <div class="result-chara-row" id="result-chara-row" style="display:none">
+    <img id="result-chara-img" src="chara_boy_happy.png" alt="">
+    <img id="result-mom-img"   src="chara_mom_happy.png" alt="">
+    <div class="result-mom-bubble" id="result-mom-bubble"></div>
+  </div>
   <div class="result-icon"  id="result-icon">🎉</div>
   <div class="result-title" id="result-title">せいかい！</div>
   <div class="result-stars" id="result-stars">⭐⭐⭐</div>
@@ -543,6 +821,79 @@ body {
 <div id="confetti-container" class="confetti-container"></div>
 
 <script>
+// ── PROFILE (キャラ・名前) ────────────────────────────
+let PROFILE = { chara: 'boy', name: '' };
+
+function loadProfile() {
+  try {
+    const saved = localStorage.getItem('okaimono-profile');
+    if (saved) PROFILE = JSON.parse(saved);
+  } catch(e) {}
+}
+
+function saveProfile() {
+  try { localStorage.setItem('okaimono-profile', JSON.stringify(PROFILE)); } catch(e) {}
+}
+
+function selectChara(type) {
+  PROFILE.chara = type;
+  document.getElementById('card-boy').classList.toggle('selected', type === 'boy');
+  document.getElementById('card-girl').classList.toggle('selected', type === 'girl');
+  document.getElementById('name-chara-img').src = `chara_${type}_full.png`;
+}
+
+function goToNameInput() {
+  document.getElementById('name-chara-img').src = `chara_${PROFILE.chara}_full.png`;
+  document.getElementById('name-input-field').value = PROFILE.name || '';
+  showScreen('screen-name-input');
+}
+
+function saveProfie() {
+  const val = document.getElementById('name-input-field').value.trim();
+  PROFILE.name = val || (PROFILE.chara === 'boy' ? 'けんた' : 'はな');
+  saveProfile();
+  updateCharaUI();
+  showScreen('screen-title');
+}
+
+function updateCharaUI() {
+  // タイトルあいさつ
+  const greet = document.getElementById('title-greeting');
+  if (greet) greet.textContent = `${PROFILE.name}、がんばろう！`;
+  // キャラ選択のハイライト
+  document.getElementById('card-boy').classList.toggle('selected', PROFILE.chara === 'boy');
+  document.getElementById('card-girl').classList.toggle('selected', PROFILE.chara === 'girl');
+}
+
+function charaImg(mood) {
+  return `chara_${PROFILE.chara}_${mood}.png`;
+}
+
+function nameHtml(text, color) {
+  if (!PROFILE.name) return text;
+  return text.replace(
+    new RegExp(PROFILE.name, 'g'),
+    `<span style="color:${color || '#FF6B35'};font-size:1.1em">${PROFILE.name}</span>`
+  );
+}
+
+function setBubble(id, text, color) {
+  document.getElementById(id).innerHTML = nameHtml(text, color);
+}
+
+// 起動時：プロフィール未設定ならキャラ選択、あれば直接タイトル
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('mute-btn').textContent = bgmMuted ? '🔇' : '🔊';
+  loadProfile();
+  if (PROFILE.name) {
+    updateCharaUI();
+    showScreen('screen-title');
+  } else {
+    selectChara('boy');
+    showScreen('screen-chara-select');
+  }
+});
+
 // ── DATA ──────────────────────────────────────────────
 const PRODUCTS = [
   // drink/dairy
@@ -745,10 +1096,7 @@ function toggleMute() {
   }
 }
 
-// 起動時ボタン状態
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('mute-btn').textContent = bgmMuted ? '🔇' : '🔊';
-});
+// 起動時ボタン状態は PROFILE ブロックの DOMContentLoaded で処理
 
 // ── TIMER ─────────────────────────────────────────────
 function startTimer() {
@@ -955,6 +1303,9 @@ function closeMomPopup() {
 
 // ── MISSION ───────────────────────────────────────────
 function renderMission() {
+  // キャラ吹き出し
+  document.getElementById('mission-chara-img').src = charaImg('normal');
+  setBubble('mission-chara-text', `${PROFILE.name}、これをかってきてね！`);
   document.getElementById('mission-subtitle').textContent =
     S.hidePrice ? 'ねだんをよそうして　おかねをもっていこう！🔥' : 'このしなものをかってきてね！';
   document.getElementById('shopping-list').innerHTML = S.list.map(({product:p,qty})=>`
@@ -1131,6 +1482,9 @@ function goToRegister() {
   document.getElementById('pay-hint').textContent =
     S.mode==='hell' ? 'じぶんでけいさんしてえらんでね！' : `${yen(finalTotal)}いじょうえらんでね`;
   document.getElementById('insufficient-msg').style.display = 'none';
+  // 店員さん
+  document.getElementById('staff-img').src  = 'chara_staff_normal.png';
+  document.getElementById('staff-text').textContent = 'いらっしゃいませ！おかねをえらんでね😊';
   showScreen('screen-register');
 }
 // 金額 → 視覚的なコイン/お札のHTML
@@ -1204,6 +1558,106 @@ function confirmChange() {
 }
 function backToRegister() { stopTimer(); showScreen('screen-register'); }
 
+// ── TIME ATTACK ───────────────────────────────────────
+let TA = {};
+let taTimerIv = null;
+
+function startTimeAttack() {
+  stopBgm();
+  if (taTimerIv) { clearInterval(taTimerIv); taTimerIv = null; }
+  TA = { correct:0, wrong:0, answerStr:'', timeLeft:60, expected:0 };
+  const best = Number(localStorage.getItem('ta-best') || 0);
+  document.getElementById('ta-best-live').textContent = best || '-';
+  document.getElementById('ta-correct').textContent = '0';
+  document.getElementById('ta-wrong').textContent = '0';
+  document.getElementById('ta-feedback').textContent = '';
+  taNextQuestion();
+  showScreen('screen-timeattack');
+  taTimerIv = setInterval(taTickTimer, 1000);
+}
+
+function taTickTimer() {
+  TA.timeLeft--;
+  const el = document.getElementById('ta-countdown');
+  const m = Math.floor(TA.timeLeft / 60);
+  const s = TA.timeLeft % 60;
+  el.textContent = `${m}:${String(s).padStart(2,'0')}`;
+  el.classList.toggle('danger', TA.timeLeft <= 10);
+  if (TA.timeLeft <= 0) {
+    clearInterval(taTimerIv); taTimerIv = null;
+    taShowResult();
+  }
+}
+
+function taNextQuestion() {
+  // ランダムな合計金額（100〜1000円・10円刻み）
+  const total = ri(1, 100) * 10;
+  // 合計より多い支払い金額（コイン・お札の切りの良い値）
+  const options = [100,200,300,500,1000,2000,5000,10000].filter(v => v > total);
+  const paid = options[ri(0, Math.min(3, options.length - 1))];
+  TA.expected = paid - total;
+  TA.answerStr = '';
+  document.getElementById('ta-q-text').innerHTML =
+    `<span class="ta-q-total">${yen(total)}</span>のおかいもの<br>` +
+    `<span class="ta-q-paid">${yen(paid)}</span>をはらったら？`;
+  document.getElementById('ta-answer-display').textContent = '？ 円';
+}
+
+function taNuminput(d) {
+  if (TA.answerStr.length >= 6) return;
+  TA.answerStr += d;
+  document.getElementById('ta-answer-display').textContent =
+    Number(TA.answerStr).toLocaleString('ja-JP') + ' 円';
+}
+
+function taNumdelete() {
+  TA.answerStr = TA.answerStr.slice(0, -1);
+  document.getElementById('ta-answer-display').textContent =
+    TA.answerStr === '' ? '？ 円' : Number(TA.answerStr).toLocaleString('ja-JP') + ' 円';
+}
+
+function taConfirm() {
+  if (!TA.answerStr) return;
+  const fb = document.getElementById('ta-feedback');
+  if (Number(TA.answerStr) === TA.expected) {
+    TA.correct++;
+    document.getElementById('ta-correct').textContent = TA.correct;
+    fb.textContent = '⭕ せいかい！';
+    fb.style.color = '#56C870';
+    if (!bgmMuted && ensureAudio()) {
+      const t0 = audioCtx.currentTime + 0.02;
+      playTone(NOTE['C5'], t0, 0.08, 'square', 0.08);
+      playTone(NOTE['E5'], t0+0.09, 0.08, 'square', 0.08);
+      playTone(NOTE['G5'], t0+0.18, 0.12, 'square', 0.08);
+    }
+  } else {
+    TA.wrong++;
+    document.getElementById('ta-wrong').textContent = TA.wrong;
+    fb.textContent = `❌ ざんねん！こたえは ${yen(TA.expected)}`;
+    fb.style.color = '#FF6B6B';
+  }
+  setTimeout(() => {
+    fb.textContent = '';
+    taNextQuestion();
+  }, 900);
+}
+
+function taShowResult() {
+  stopBgm();
+  const best = Number(localStorage.getItem('ta-best') || 0);
+  const isNew = TA.correct > best;
+  if (isNew) localStorage.setItem('ta-best', TA.correct);
+  const total = TA.correct + TA.wrong;
+  const rate = total === 0 ? 0 : Math.round(TA.correct / total * 100);
+  document.getElementById('tar-correct').textContent = TA.correct;
+  document.getElementById('tar-wrong').textContent = TA.wrong;
+  document.getElementById('tar-rate').textContent = rate + '%';
+  document.getElementById('tar-best').textContent = isNew ? TA.correct : best;
+  document.getElementById('tar-best-banner').style.display = isNew ? 'block' : 'none';
+  if (TA.correct > 0) { launchConfetti(); playSuccessFanfare(); }
+  showScreen('screen-ta-result');
+}
+
 // ── RESULT ────────────────────────────────────────────
 function showResult(ok, entered) {
   const sc  = document.getElementById('screen-result');
@@ -1217,12 +1671,79 @@ function showResult(ok, entered) {
   // reset
   ttl.classList.remove('rainbow'); sc.classList.remove('pulse-bg');
 
+  // キャラ行
+  const charaRow = document.getElementById('result-chara-row');
+  const charaImg2 = document.getElementById('result-chara-img');
+  const momImg    = document.getElementById('result-mom-img');
+  momImg.style.display = 'inline-block'; // リセット
+
   if (ok) {
     sc.style.background = 'linear-gradient(160deg,#1B5E20,#43A047)';
     sc.classList.add('pulse-bg');
     ico.textContent = '🎊';
     ttl.textContent = 'せいかい！'; ttl.classList.add('rainbow');
     sts.style.display = 'block';
+    // 正解：キャラ＋お母さんを表示
+    charaRow.style.display = 'flex';
+    charaImg2.src = charaImg('happy');
+    momImg.src    = 'chara_mom_happy.png';
+    const momSpeeches = {
+      heaven: [
+        `${PROFILE.name}、ちゃんとはらえたね！えらい💕`,
+        `すごいすごい！おかあさんびっくりしちゃった🌟`,
+        `じょうずにできたね！おかあさんうれしい😊`,
+        `やったね${PROFILE.name}！さすがだよ💕`,
+        `かわいい${PROFILE.name}！またいっしょにいこうね🛒`,
+      ],
+      veryeasy: [
+        `${PROFILE.name}、ちゃんとはらえたね！えらい💕`,
+        `すごい！${PROFILE.name}はかしこいね🌟`,
+        `じょうずにできたね！おかあさんうれしい😊`,
+        `やったね！またれんしゅうしようね💕`,
+        `ひとりでできたね！さすが${PROFILE.name}🎉`,
+      ],
+      easy: [
+        `${PROFILE.name}、じょうずにかいものできたね！💕`,
+        `すごい！おつりまでばっちり🌟`,
+        `かんぺき！${PROFILE.name}はかいものじょうずだね😊`,
+        `えらいえらい！またいっしょにかおうね💕`,
+        `おつりもしっかりわかったね！さすが🎉`,
+      ],
+      normal: [
+        `${PROFILE.name}、ぜんぶかえたね！よくできました💕`,
+        `おつりもぴったり！さすが${PROFILE.name}🌟`,
+        `コーナーもぜんぶまわれたね！えらい😊`,
+        `かいものじょうず！おかあさんほこりに思うよ💕`,
+        `かんぺき！つぎはもっとむずかしいのもできるよ🎉`,
+      ],
+      hard: [
+        `むずかしかったのに、よくできた！さすが${PROFILE.name}💕`,
+        `わりびきもちゃんとわかったね！すごい🌟`,
+        `${PROFILE.name}、かしこくなったね！おかあさんうれしい😊`,
+        `たいへんだったのによくがんばったね💕`,
+        `これができたら、なんでもできるよ！えらい🎉`,
+      ],
+      super: [
+        `ねだんがかくれてたのに、よくわかったね！${PROFILE.name}すごい💕`,
+        `あたまをつかって、ばっちり！さすが🌟`,
+        `かくれたねだんもよそうできたね！かしこい😊`,
+        `${PROFILE.name}、かいものめいじんだね💕`,
+        `むずかしいのにあきらめなかった！えらい🎉`,
+      ],
+      hell: [
+        `じごくモードをクリア！${PROFILE.name}はてんさいだ💕`,
+        `こんなにむずかしいのに！おかあさんびっくり🌟`,
+        `ぜんぶじぶんでかんがえられたね！すごすぎる😊`,
+        `${PROFILE.name}、しょうらいかいけいしさんになれるよ💕`,
+        `かんぺき！おかあさんがじまんできる！🎉`,
+      ],
+    };
+    const pool = momSpeeches[S.mode] || momSpeeches.normal;
+    const speech = pool[ri(0, pool.length-1)];
+    setBubble('result-mom-bubble', speech, '#FFD93D');
+    // 店員さんも変更
+    document.getElementById('staff-img').src  = 'chara_staff_happy.png';
+    document.getElementById('staff-text').textContent = 'ありがとうございました！またきてね🎉';
     sts.textContent = S.expectedChange===0 ? '⭐⭐⭐ ピッタリ！' : '⭐⭐⭐';
     // 評価（てんごく以外）
     const eff = (S.mode !== 'heaven') ? efficiencyRating(S.expectedChange, S.paidAmt) : null;
@@ -1235,8 +1756,7 @@ function showResult(ok, entered) {
         ? `しなもの：<strong>${yen(S.total)}</strong><br>わりびき：<strong>${S.discount}円</strong> 🎉<br>ごうけい：<strong>${yen(S.total+S.discount)}</strong><br>`
         : `かいもの：<strong>${yen(S.total+S.discount)}</strong><br>`) +
       `しはらい：<strong>${yen(S.paidAmt)}</strong><br>おつり：<strong>${yen(S.expectedChange)}</strong>` +
-      effHtml +
-      `<br>${(S.mode==='veryeasy'||S.mode==='heaven') ? '🌟 ちゃんとはらえたね！' : '🌟 じょうずにかいものできたね！'}`;
+      effHtml;
     if (S.mode==='veryeasy' || S.mode==='heaven') {
       tmr.style.display='none';
     } else {
@@ -1258,6 +1778,11 @@ function showResult(ok, entered) {
     ico.textContent = '😢';
     ttl.textContent = 'ざんねん！';
     sts.style.display='none';
+    // 不正解：キャラのみ（お母さんなし）
+    charaRow.style.display = 'flex';
+    charaImg2.src = charaImg('sad');
+    momImg.style.display = 'none';
+    document.getElementById('result-mom-bubble').textContent = '';
     box.innerHTML =
       (S.discount!==0
         ? `しなもの：<strong>${yen(S.total)}</strong><br>わりびき：<strong>${S.discount}円</strong><br>ごうけい：<strong>${yen(S.total+S.discount)}</strong><br>`
