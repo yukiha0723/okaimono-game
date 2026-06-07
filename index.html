@@ -121,9 +121,25 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   cursor: pointer; background: none; border: none; font-family: inherit;
   -webkit-tap-highlight-color: transparent; transition: transform .1s;
+  position: relative;
 }
 .coin-btn:active { transform: scale(.85); }
 .bill-btn:active { transform: scale(.9); }
+.money-hint-badge {
+  position: absolute; top: -6px; right: -2px;
+  background: #FF6B35; color: white; border-radius: 12px;
+  font-size: .72em; font-weight: 800; padding: 1px 6px;
+  pointer-events: none; z-index: 1;
+}
+.money-hint-glow .coin-circle,
+.money-hint-glow .bill-rect {
+  animation: hint-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 0 3px #56C870, 0 0 12px 4px rgba(86,200,112,.5);
+}
+@keyframes hint-pulse {
+  0%,100% { box-shadow: 0 0 0 3px #56C870, 0 0 8px 2px rgba(86,200,112,.4); }
+  50%      { box-shadow: 0 0 0 4px #56C870, 0 0 16px 6px rgba(86,200,112,.7); }
+}
 .coin-circle {
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
   font-weight: 800; border: 4px solid; position: relative; user-select: none;
@@ -542,6 +558,46 @@ body {
 .complete-dinner {
   background:rgba(255,255,255,.25); border-radius:16px; padding:14px 20px;
   font-size:1.1em; font-weight:800; color:white; width:100%;
+  cursor:pointer; border:3px dashed rgba(255,255,255,.7);
+  animation:pulse-btn 1.4s ease-in-out infinite;
+  transition:transform .1s;
+}
+.complete-dinner:active { transform:scale(.96); }
+@keyframes pulse-btn {
+  0%,100% { box-shadow:0 0 0 0 rgba(255,255,255,.5); }
+  50%      { box-shadow:0 0 0 10px rgba(255,255,255,0); }
+}
+
+/* 作り方ポップアップ */
+.recipe-popup-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.55);
+  z-index:200; align-items:center; justify-content:center;
+}
+.recipe-popup-overlay.show { display:flex; }
+.recipe-popup {
+  background:white; border-radius:24px; padding:24px 20px;
+  width:92%; max-width:400px; max-height:85vh; overflow-y:auto;
+  box-shadow:0 12px 40px rgba(0,0,0,.3);
+  animation:popIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+.recipe-popup-title {
+  font-size:1.3em; font-weight:800; color:#FF6B35; text-align:center;
+  margin-bottom:16px;
+}
+.recipe-step {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:10px 0; border-bottom:1px solid #F5F5F5;
+  font-size:1em; font-weight:700; color:#333; line-height:1.6;
+}
+.recipe-step:last-of-type { border-bottom:none; }
+.recipe-step-num {
+  background:#FF6B35; color:white; border-radius:50%;
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  font-size:.85em; font-weight:800; flex-shrink:0; margin-top:2px;
+}
+.recipe-popup-note {
+  text-align:center; font-size:.85em; font-weight:700; color:#FF6B35;
+  background:#FFF3E0; border-radius:12px; padding:10px; margin-top:14px;
 }
 
 /* MISC */
@@ -668,20 +724,20 @@ body {
   <div class="currency-section">
     <div class="currency-section-title">🪙 こうか（コイン）</div>
     <div class="coins-row">
-      <button class="coin-btn" onclick="addMoney(1)"><div class="coin-circle coin-1 sz-sm">1</div><span class="coin-label">1円</span></button>
-      <button class="coin-btn" onclick="addMoney(5)"><div class="coin-circle coin-5 sz-sm coin-hole">5</div><span class="coin-label">5円</span></button>
-      <button class="coin-btn" onclick="addMoney(10)"><div class="coin-circle coin-10 sz-md">10</div><span class="coin-label">10円</span></button>
-      <button class="coin-btn" onclick="addMoney(50)"><div class="coin-circle coin-50 sz-md coin-hole">50</div><span class="coin-label">50円</span></button>
-      <button class="coin-btn" onclick="addMoney(100)"><div class="coin-circle coin-100 sz-lg">100</div><span class="coin-label">100円</span></button>
-      <button class="coin-btn" onclick="addMoney(500)"><div class="coin-circle coin-500 sz-lg">500</div><span class="coin-label">500円</span></button>
+      <button class="coin-btn" id="money-btn-1"     onclick="addMoney(1)"><div class="coin-circle coin-1 sz-sm">1</div><span class="coin-label">1円</span></button>
+      <button class="coin-btn" id="money-btn-5"     onclick="addMoney(5)"><div class="coin-circle coin-5 sz-sm coin-hole">5</div><span class="coin-label">5円</span></button>
+      <button class="coin-btn" id="money-btn-10"    onclick="addMoney(10)"><div class="coin-circle coin-10 sz-md">10</div><span class="coin-label">10円</span></button>
+      <button class="coin-btn" id="money-btn-50"    onclick="addMoney(50)"><div class="coin-circle coin-50 sz-md coin-hole">50</div><span class="coin-label">50円</span></button>
+      <button class="coin-btn" id="money-btn-100"   onclick="addMoney(100)"><div class="coin-circle coin-100 sz-lg">100</div><span class="coin-label">100円</span></button>
+      <button class="coin-btn" id="money-btn-500"   onclick="addMoney(500)"><div class="coin-circle coin-500 sz-lg">500</div><span class="coin-label">500円</span></button>
     </div>
   </div>
   <div class="currency-section">
     <div class="currency-section-title">💴 おさつ</div>
     <div class="bills-row">
-      <button class="bill-btn" onclick="addMoney(1000)"><div class="bill-rect bill-1000"><span>千円</span><span style="font-size:.65em;font-weight:400">¥1,000</span></div><span class="bill-label">1,000円</span></button>
-      <button class="bill-btn" onclick="addMoney(5000)"><div class="bill-rect bill-5000"><span>五千円</span><span style="font-size:.65em;font-weight:400">¥5,000</span></div><span class="bill-label">5,000円</span></button>
-      <button class="bill-btn" onclick="addMoney(10000)"><div class="bill-rect bill-10000"><span>一万円</span><span style="font-size:.65em;font-weight:400">¥10,000</span></div><span class="bill-label">10,000円</span></button>
+      <button class="bill-btn" id="money-btn-1000"  onclick="addMoney(1000)"><div class="bill-rect bill-1000"><span>千円</span><span style="font-size:.65em;font-weight:400">¥1,000</span></div><span class="bill-label">1,000円</span></button>
+      <button class="bill-btn" id="money-btn-5000"  onclick="addMoney(5000)"><div class="bill-rect bill-5000"><span>五千円</span><span style="font-size:.65em;font-weight:400">¥5,000</span></div><span class="bill-label">5,000円</span></button>
+      <button class="bill-btn" id="money-btn-10000" onclick="addMoney(10000)"><div class="bill-rect bill-10000"><span>一万円</span><span style="font-size:.65em;font-weight:400">¥10,000</span></div><span class="bill-label">10,000円</span></button>
     </div>
   </div>
   <div class="wallet-box">
@@ -804,9 +860,19 @@ body {
     <div class="complete-bubble" id="complete-bubble">いっしょに　つくってみる？🍳</div>
     <img src="chara_mom_happy.png" alt="">
   </div>
-  <div class="complete-dinner">🍽 いっしょに　つくってみる？🍳</div>
-  <button class="btn btn-green w-full" onclick="startGame('heaven')">もういちど ☁️</button>
+  <div class="complete-dinner" onclick="showRecipeSteps()">👆 いっしょに　つくってみる？🍳</div>
+  <button class="btn btn-green w-full" id="story-again-btn" onclick="startGame('heaven')">もういちど ☁️</button>
   <button class="btn btn-gray w-full" onclick="showScreen('screen-title')" style="margin-top:8px">タイトルにもどる 🏠</button>
+</div>
+
+<!-- 作り方ポップアップ -->
+<div class="recipe-popup-overlay" id="recipe-popup-overlay" onclick="closeRecipePopup(event)">
+  <div class="recipe-popup">
+    <div class="recipe-popup-title" id="recipe-popup-title"></div>
+    <div id="recipe-popup-steps"></div>
+    <div class="recipe-popup-note">👨‍👩‍👧 おとうさん・おかあさんと　いっしょに　つくってね！</div>
+    <button class="btn btn-gray w-full" onclick="closeRecipePopup()" style="margin-top:16px">とじる</button>
+  </div>
 </div>
 
 <!-- TIME ATTACK -->
@@ -976,10 +1042,10 @@ window.addEventListener('DOMContentLoaded', () => {
 // ── DATA ──────────────────────────────────────────────
 const PRODUCTS = [
   // condiments (調味料)
-  {id:'ketchup', name:'ケチャップ',   emoji:'🍅', price:198, unit:'1ぽん',   corner:'instant', img:'items/item_ketchup.png'},
+  {id:'ketchup', name:'ケチャップ',   emoji:'🧴', price:198, unit:'1ぽん',   corner:'instant', img:'items/item_ketchup.png'},
   {id:'mayo',    name:'マヨネーズ',   emoji:'🫙', price:228, unit:'1ぽん',   corner:'instant', img:'items/item_mayo.png'},
-  {id:'miso',    name:'みそ',         emoji:'🟤', price:248, unit:'1パック', corner:'instant', img:'items/item_miso.png'},
-  {id:'sugar',   name:'さとう',       emoji:'🍬', price:148, unit:'1ふくろ', corner:'instant', img:'items/item_sugar.png'},
+  {id:'miso',    name:'みそ',         emoji:'🟫', price:248, unit:'1パック', corner:'instant', img:'items/item_miso.png'},
+  {id:'sugar',   name:'さとう',       emoji:'🫙', price:148, unit:'1ふくろ', corner:'instant', img:'items/item_sugar.png'},
   {id:'flour',   name:'こむぎこ',     emoji:'🌾', price:168, unit:'1ふくろ', corner:'instant', img:'items/item_flour.png'},
   {id:'shoyu',   name:'しょうゆ',     emoji:'🫗', price:178, unit:'1ぽん',   corner:'instant', img:'items/item_shoyu.png'},
   // drink/dairy
@@ -990,24 +1056,30 @@ const PRODUCTS = [
   {id:'cheese',  name:'チーズ',         emoji:'🧀', price:298, unit:'1こ',    corner:'drink'},
   {id:'tofu',    name:'とうふ',         emoji:'⬜', price: 88, unit:'1こ',    corner:'drink'},
   // vege/fruit
-  {id:'apple',   name:'りんご',         emoji:'🍎', price:198, unit:'1こ',    corner:'vege'},
-  {id:'banana',  name:'バナナ',         emoji:'🍌', price:178, unit:'1ふさ',  corner:'vege'},
-  {id:'mikan',   name:'みかん',         emoji:'🍊', price:148, unit:'1こ',    corner:'vege'},
-  {id:'potato',  name:'じゃがいも',     emoji:'🥔', price: 78, unit:'1こ',    corner:'vege'},
-  {id:'carrot',  name:'にんじん',       emoji:'🥕', price: 88, unit:'1本',    corner:'vege'},
-  {id:'cabbage', name:'キャベツ',       emoji:'🥬', price:228, unit:'1こ',    corner:'vege'},
-  {id:'tomato',  name:'トマト',         emoji:'🍅', price:128, unit:'1こ',    corner:'vege'},
-  {id:'cucumber',name:'きゅうり',       emoji:'🥒', price: 78, unit:'1本',    corner:'vege'},
-  {id:'corn',    name:'コーン',         emoji:'🌽', price: 98, unit:'1本',    corner:'vege'},
-  {id:'mushroom',name:'きのこ',         emoji:'🍄', price:138, unit:'1パック', corner:'vege'},
+  {id:'apple',        name:'りんご',       emoji:'🍎', price:198, unit:'1こ',    corner:'vege'},
+  {id:'banana',       name:'バナナ',       emoji:'🍌', price:178, unit:'1ふさ',  corner:'vege'},
+  {id:'mikan',        name:'みかん',       emoji:'🍊', price:148, unit:'1こ',    corner:'vege'},
+  {id:'strawberry',   name:'いちご',       emoji:'🍓', price:298, unit:'1パック', corner:'vege', img:'items/item_strawberry.png'},
+  {id:'potato',       name:'じゃがいも',   emoji:'🥔', price: 78, unit:'1こ',    corner:'vege'},
+  {id:'sweet_potato', name:'さつまいも',   emoji:'🍠', price: 98, unit:'1こ',    corner:'vege', img:'items/item_sweet_potato.png'},
+  {id:'carrot',       name:'にんじん',     emoji:'🥕', price: 88, unit:'1本',    corner:'vege'},
+  {id:'cabbage',      name:'キャベツ',     emoji:'🥬', price:228, unit:'1こ',    corner:'vege'},
+  {id:'tomato',       name:'トマト',       emoji:'🍅', price:128, unit:'1こ',    corner:'vege'},
+  {id:'cucumber',     name:'きゅうり',     emoji:'🥒', price: 78, unit:'1本',    corner:'vege'},
+  {id:'corn',         name:'コーン',       emoji:'🌽', price: 98, unit:'1本',    corner:'vege'},
+  {id:'mushroom',     name:'きのこ',       emoji:'🍄', price:138, unit:'1パック', corner:'vege'},
   // meat/egg
-  {id:'egg',     name:'たまご',         emoji:'🥚', price:268, unit:'10こ',   corner:'meat'},
-  {id:'ham',     name:'ハム',           emoji:'🥩', price:248, unit:'1パック', corner:'meat'},
+  {id:'egg',          name:'たまご',       emoji:'🥚', price:268, unit:'10こ',   corner:'meat'},
+  {id:'ham',          name:'ハム',         emoji:'🥩', price:248, unit:'1パック', corner:'meat'},
+  {id:'sausage',      name:'ソーセージ',   emoji:'🌭', price:218, unit:'1パック', corner:'meat', img:'items/item_sausage.png'},
+  {id:'tako',         name:'たこ',         emoji:'🐙', price:298, unit:'1パック', corner:'meat', img:'items/item_tako.png'},
+  {id:'tuna',         name:'ツナかん',     emoji:'🥫', price:148, unit:'1かん',  corner:'meat', img:'items/item_tuna.png'},
   // bread/bento
   {id:'bread',   name:'しょくぱん',     emoji:'🍞', price:185, unit:'1ふくろ', corner:'bread'},
   {id:'onigiri', name:'おにぎり',       emoji:'🍙', price:148, unit:'1こ',    corner:'bread'},
   // instant
-  {id:'noodle',  name:'カップめん',     emoji:'🍜', price:218, unit:'1こ',    corner:'instant'},
+  {id:'noodle',         name:'カップめん',   emoji:'🍜', price:218, unit:'1こ',    corner:'instant'},
+  {id:'yakisoba_noodle',name:'やきそばめん', emoji:'🍝', price:158, unit:'1ふくろ', corner:'instant', img:'items/item_yakisoba_noodle.png'},
   {id:'curry',   name:'カレーレトルト', emoji:'🍛', price:248, unit:'1こ',    corner:'instant'},
   // snack
   {id:'choco',   name:'チョコレート',   emoji:'🍫', price:158, unit:'1まい',  corner:'snack'},
@@ -1044,9 +1116,99 @@ const RECIPES = [
     ingredients:['bread','egg','sugar'] },
   { id:'hotcake',      name:'ホットケーキ',    emoji:'🥞', img:'recipes/recipe_hotcake.png',
     ingredients:['flour','egg','milk'] },
-  { id:'miso_soup',    name:'みそしる',        emoji:'🍲', img:'recipes/recipe_miso_soup.png',
+  { id:'miso_soup',        name:'みそしる',          emoji:'🍲', img:'recipes/recipe_miso_soup.png',
     ingredients:['tofu','miso'] },
+  { id:'sandwich',         name:'サンドイッチ',       emoji:'🥪', img:'recipes/recipe_sandwich.png',
+    ingredients:['bread','ham','cheese'] },
+  { id:'tamagoyaki',       name:'たまごやき',         emoji:'🍱', img:'recipes/recipe_tamagoyaki.png',
+    ingredients:['egg','sugar','shoyu'] },
+  { id:'yogurt_fruit',     name:'ヨーグルトフルーツ', emoji:'🍓', img:'recipes/recipe_yogurt_fruit.png',
+    ingredients:['apple','banana','yogurt'] },
+  { id:'cheese_toast',     name:'チーズトースト',     emoji:'🧀', img:'recipes/recipe_cheese_toast.png',
+    ingredients:['bread','cheese','butter'] },
+  { id:'pickled_cucumber', name:'きゅうりのつけもの', emoji:'🥒', img:'recipes/recipe_pickled_cucumber.png',
+    ingredients:['cucumber','shoyu','sugar'] },
+  { id:'cabbage_stir',     name:'キャベツいため',     emoji:'🥬', img:'recipes/recipe_cabbage_stir.png',
+    ingredients:['cabbage','ham','butter'] },
+  { id:'strawberry_milk',  name:'いちごミルク',       emoji:'🍓', img:'recipes/recipe_strawberry_milk.png',
+    ingredients:['strawberry','milk','banana'] },
+  { id:'sweet_potato',     name:'スイートポテト',     emoji:'🍠', img:'recipes/recipe_sweet_potato.png',
+    ingredients:['sweet_potato','butter','sugar'] },
+  { id:'potaufeu',        name:'ポトフ',             emoji:'🍲', img:'recipes/recipe_potaufeu.png',
+    ingredients:['potato','carrot','sausage'] },
+  { id:'pudding',         name:'プリン',             emoji:'🍮', img:'recipes/recipe_pudding.png',
+    ingredients:['egg','milk','sugar'] },
+  { id:'pizza_toast',     name:'ピザトースト',       emoji:'🍕', img:'recipes/recipe_pizza_toast.png',
+    ingredients:['bread','ketchup','cheese'] },
+  { id:'chahan',          name:'チャーハン',         emoji:'🍚', img:'recipes/recipe_chahan.png',
+    ingredients:['egg','ham','shoyu'] },
+  { id:'choco_cake',      name:'チョコケーキ',       emoji:'🎂', img:'recipes/recipe_choco_cake.png',
+    ingredients:['choco','flour','egg'] },
+  { id:'tomato_soup',     name:'トマトスープ',       emoji:'🍅', img:'recipes/recipe_tomato_soup.png',
+    ingredients:['tomato','milk','butter'] },
+  { id:'cream_stew',      name:'クリームシチュー',   emoji:'🥘', img:'recipes/recipe_cream_stew.png',
+    ingredients:['potato','carrot','milk'] },
+  { id:'strawberry_jam',  name:'いちごジャム',       emoji:'🍓', img:'recipes/recipe_strawberry_jam.png',
+    ingredients:['strawberry','sugar'] },
+  { id:'banana_cake',     name:'バナナケーキ',       emoji:'🍌', img:'recipes/recipe_banana_cake.png',
+    ingredients:['banana','flour','sugar'] },
+  { id:'yakisoba',        name:'やきそば',           emoji:'🍜', img:'recipes/recipe_yakisoba.png',
+    ingredients:['yakisoba_noodle','cabbage','ketchup'] },
+  { id:'takoyaki',        name:'たこやき',           emoji:'🐙', img:'recipes/recipe_takoyaki.png',
+    ingredients:['tako','flour','egg'] },
+  { id:'tuna_salad',      name:'ツナサラダ',         emoji:'🥗', img:'recipes/recipe_tuna_salad.png',
+    ingredients:['tuna','mayo','cucumber'] },
 ];
+
+const RECIPE_STEPS = {
+  curry:            ['じゃがいもとにんじんをきる 🔪','なべにいれてやわらかくなるまでにる 🫕','カレーをいれてまぜる 🥄','ごはんにかけたらかんせい！ 🍛'],
+  hamburg:          ['たまごとひきにくをまぜてこねる 🥚','だえんがたにかたちをととのえる 👐','フライパンでやく 🍳','ケチャップをかけたらかんせい！ 🍅'],
+  omurice:          ['たまごをといてフライパンでやく 🥚','ごはんとハムとコーンをいためる 🍳','たまごでごはんをつつむ 👐','ケチャップでかいたらかんせい！ 🍳'],
+  potato_salad:     ['じゃがいもとにんじんをゆでる 🫕','やわらかくなったらつぶす 👐','マヨネーズとまぜる 🥄','さましたらかんせい！ 🥗'],
+  fruit_punch:      ['りんごをひとくちサイズにきる 🔪','バナナとみかんもいれる 🍌','サイダーをそそぐ 🧃','まぜたらかんせい！ 🍓'],
+  choco_banana:     ['バナナをくしにさす 🍌','チョコレートをとかす 🍫','バナナをチョコにつける 👐','カラースプレーをかけてかためたらかんせい！ 🎉'],
+  corn_soup:        ['なべにミルクをいれてあたためる 🥛','コーンをいれてまぜる 🌽','バターをいれてとかす 🧈','カップにそそいだらかんせい！ 🌽'],
+  french_toast:     ['たまごとミルクとさとうをまぜる 🥚','パンをひたす 🍞','フライパンでこんがりやく 🍳','こなさとうをふったらかんせい！ 🍞'],
+  hotcake:          ['こむぎこ・たまご・ミルクをまぜる 🥚','フライパンにながしいれる 🍳','あわがでてきたらひっくりかえす 🥞','バターとシロップをかけたらかんせい！ 🥞'],
+  miso_soup:        ['なべにおゆをわかす 🫕','とうふをきっていれる 🔪','みそをとかしいれる 🥄','おわんによそったらかんせい！ 🍲'],
+  sandwich:         ['パンを2まいよういする 🍞','ハムとチーズをのせる 🧀','もう1まいのパンではさむ 👐','はんぶんにきったらかんせい！ 🥪'],
+  tamagoyaki:       ['たまごをわってさとうとしょうゆをまぜる 🥚','フライパンにながしいれる 🍳','すこしかたまったらまきはじめる 🥄','きってならべたらかんせい！ 🍱'],
+  yogurt_fruit:     ['りんごをひとくちサイズにきる 🔪','バナナもきる 🍌','カップにヨーグルトをいれる 🥣','フルーツをかざったらかんせい！ 🍓'],
+  cheese_toast:     ['パンにバターをぬる 🍞','チーズをのせる 🧀','トースターでやく 🔥','チーズがとけたらかんせい！ 🧀'],
+  pickled_cucumber: ['きゅうりをうすくきる 🔪','しょうゆとさとうをまぜる 🥄','きゅうりをひたす 🥒','しばらくおいたらかんせい！ 🥒'],
+  cabbage_stir:     ['キャベツをざくぎりにする 🔪','ハムをきる 🥩','フライパンでバターといためる 🧈','しおこしょうをふったらかんせい！ 🥬'],
+  strawberry_milk:  ['いちごをあらう 🍓','いちごをつぶす 👐','グラスにミルクをそそぐ 🥛','まぜたらかんせい！ 🍓'],
+  sweet_potato:     ['さつまいもをゆでてつぶす 🫕','バターとさとうをまぜる 🧈','まるくかたちをととのえる 👐','トースターでやいたらかんせい！ 🍠'],
+  potaufeu:        ['じゃがいもとにんじんをきる 🔪','ソーセージといっしょになべにいれる 🫕','やわらかくなるまでにる 🥄','おわんによそったらかんせい！ 🍲'],
+  pudding:         ['たまごとさとうをまぜる 🥚','ぎゅうにゅうをあたためてまぜる 🥛','カップにながしいれてむす 🫕','さましてカラメルをかけたらかんせい！ 🍮'],
+  pizza_toast:     ['しょくぱんにケチャップをぬる 🍞','チーズをのせる 🧀','トースターでこんがりやく 🔥','チーズがとけたらかんせい！ 🍕'],
+  chahan:          ['たまごをといてフライパンでいためる 🍳','ごはんとハムをいれていためる 🍚','しょうゆをまわしいれる 🥄','おさらによそったらかんせい！ 🍚'],
+  choco_cake:      ['チョコレートをとかす 🍫','こむぎことたまごをまぜる 🥚','チョコをくわえてまぜる 🥄','オーブンでやいたらかんせい！ 🎂'],
+  tomato_soup:     ['トマトをきってなべにいれる 🍅','ぎゅうにゅうをくわえてにる 🥛','バターをいれてまぜる 🧈','カップにそそいだらかんせい！ 🍅'],
+  cream_stew:      ['じゃがいもとにんじんをきる 🔪','なべでやわらかくなるまでにる 🫕','ぎゅうにゅうをくわえてまぜる 🥛','とろっとしたらかんせい！ 🥘'],
+  strawberry_jam:  ['いちごをあらってへたをとる 🍓','なべにさとうといっしょにいれる 🥄','よくまぜながらにつめる 🫕','びんにつめてさましたらかんせい！ 🍓'],
+  banana_cake:     ['バナナをつぶす 🍌','こむぎことさとうをまぜる 🥄','バナナとまぜてかたにながす 👐','オーブンでやいたらかんせい！ 🍌'],
+  yakisoba:        ['キャベツをざくぎりにする 🔪','フライパンでめんといためる 🍜','ケチャップをくわえてまぜる 🥄','おさらによそったらかんせい！ 🍜'],
+  takoyaki:        ['こむぎことたまごをまぜてきじをつくる 🥚','たこやききにきじをながす 🥄','たこをいれてまるくやく 🐙','ソースとマヨネーズをかけたらかんせい！ 🐙'],
+  tuna_salad:      ['ツナかんをあける 🥫','きゅうりをうすくきる 🔪','マヨネーズとまぜる 🥄','おさらにもったらかんせい！ 🥗'],
+};
+
+function showRecipeSteps() {
+  const recipe = STORY.recipe;
+  if (!recipe) return;
+  const steps = RECIPE_STEPS[recipe.id];
+  if (!steps) return;
+  document.getElementById('recipe-popup-title').textContent = `🍳 ${recipe.name}のつくりかた`;
+  document.getElementById('recipe-popup-steps').innerHTML = steps.map((s, i) =>
+    `<div class="recipe-step"><div class="recipe-step-num">${i+1}</div><div>${s}</div></div>`
+  ).join('');
+  document.getElementById('recipe-popup-overlay').classList.add('show');
+}
+
+function closeRecipePopup(e) {
+  if (e && e.target !== document.getElementById('recipe-popup-overlay')) return;
+  document.getElementById('recipe-popup-overlay').classList.remove('show');
+}
 
 // ── STORY STATE ───────────────────────────────────────
 let STORY = {};
@@ -1105,6 +1267,15 @@ function showStoryComplete() {
     `じょうずにかえたね！いっしょに　つくろう💕`,
   ];
   setBubble('complete-bubble', completeSpeeches[ri(0, completeSpeeches.length-1)], '#FF6B35');
+  // もういちどボタンをモードに合わせる
+  const againBtn = document.getElementById('story-again-btn');
+  if (STORY.storyMode === 'veryeasy') {
+    againBtn.textContent = 'もういちど 🛒';
+    againBtn.onclick = () => startGame('veryeasy');
+  } else {
+    againBtn.textContent = 'もういちど ☁️';
+    againBtn.onclick = () => startGame('heaven');
+  }
   launchConfetti();
   playSuccessFanfare();
   showScreen('screen-story-complete');
@@ -1464,6 +1635,21 @@ function startGame(mode) {
     return;
   }
 
+  // ちょうかんたんモード：レシピの食材を一度に全部買う
+  if (mode === 'veryeasy') {
+    const lastId = STORY.recipe ? STORY.recipe.id : null;
+    const pool = RECIPES.filter(r => r.id !== lastId);
+    const recipe = pool[ri(0, pool.length - 1)];
+    const products = recipe.ingredients.map(id => getIngredientProduct(id)).filter(Boolean);
+    STORY = { recipe, collectedIds: [], storyMode: 'veryeasy' };
+    S.list  = products.map(p => ({ product: p, qty: 1 }));
+    S.total = S.list.reduce((s, i) => s + i.product.price, 0);
+    S.storyMode = true;
+    renderMission();
+    showScreen('screen-mission');
+    return;
+  }
+
   S.list  = shuffle(PRODUCTS).slice(0,n).map(p=>({product:p,qty:1}));
   S.total = S.list.reduce((s,i)=>s+i.product.price*i.qty,0);
 
@@ -1522,19 +1708,26 @@ function renderMission() {
     const total = STORY.recipe.ingredients.length;
     setBubble('mission-chara-text',
       `${PROFILE.name}、これをかってきてね！（${got+1}/${total}）\nなにができるかな？🍳`);
+  } else if (S.storyMode && STORY.storyMode === 'veryeasy') {
+    setBubble('mission-chara-text',
+      `${PROFILE.name}、これをぜんぶかってきてね！\nなにができるかな？🍳`);
   } else {
     setBubble('mission-chara-text', `${PROFILE.name}、これをかってきてね！`);
   }
   document.getElementById('mission-subtitle').textContent =
     S.hidePrice ? 'ねだんをよそうして　おかねをもっていこう！🔥' : 'このしなものをかってきてね！';
-  document.getElementById('shopping-list').innerHTML = S.list.map(({product:p,qty})=>`
-    <div class="list-item">
-      <span class="list-emoji">${p.emoji}</span>
+  document.getElementById('shopping-list').innerHTML = S.list.map(({product:p,qty})=>{
+    const icon = p.img
+      ? `<img src="${p.img}" style="width:44px;height:44px;object-fit:contain">`
+      : `<span class="list-emoji">${p.emoji}</span>`;
+    return `<div class="list-item">
+      ${icon}
       <div style="flex:1"><div class="list-name">${p.name}</div><div class="list-detail">${p.unit} × ${qty}</div></div>
       <span class="list-price" style="${S.hidePrice?'color:#CCC;letter-spacing:2px':''}">
         ${S.hidePrice ? '？？？円' : yen(p.price*qty)}
       </span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   const el = document.getElementById('mission-total');
   el.textContent = S.hidePrice ? '？ 円' : yen(S.total);
   el.style.color  = S.hidePrice ? '#CCC' : '';
@@ -1542,8 +1735,8 @@ function renderMission() {
 
 // ── WALLET ────────────────────────────────────────────
 function goToWallet() {
-  // ストーリーモード・てんごく：おかあさんポップアップを表示
-  if (S.storyMode || S.mode === 'heaven') { showMomPopup(); return; }
+  // てんごく：おかあさんポップアップを表示（ちょうかんたんは通常のお金選びへ）
+  if (S.mode === 'heaven') { showMomPopup(); return; }
 
   const te = document.getElementById('wallet-target');
   if (S.hidePrice) { te.textContent='？ 円（スーパーでかくにん！）'; te.style.color='#E53935'; }
@@ -1563,6 +1756,34 @@ function renderWallet() {
   const el  = document.getElementById('wallet-total');
   el.textContent = 'ごうけい: '+yen(tot);
   el.className   = 'wallet-total'+(!S.hidePrice&&tot>=S.total?' enough':'');
+
+  // ちょうかんたんモード：ヒント表示
+  const denoms = [10000,5000,1000,500,100,50,10,5,1];
+  denoms.forEach(d => {
+    const btn = document.getElementById(`money-btn-${d}`);
+    if (!btn) return;
+    btn.classList.remove('money-hint-glow');
+    const old = btn.querySelector('.money-hint-badge');
+    if (old) old.remove();
+  });
+  if (S.mode === 'veryeasy' && !S.hidePrice) {
+    let remain = Math.max(0, S.total - tot);
+    const hint = {};
+    for (const d of denoms) {
+      if (remain <= 0) break;
+      const n = Math.floor(remain / d);
+      if (n > 0) { hint[d] = n; remain -= d * n; }
+    }
+    Object.entries(hint).forEach(([d, n]) => {
+      const btn = document.getElementById(`money-btn-${d}`);
+      if (!btn) return;
+      btn.classList.add('money-hint-glow');
+      const badge = document.createElement('div');
+      badge.className = 'money-hint-badge';
+      badge.textContent = `×${n}`;
+      btn.appendChild(badge);
+    });
+  }
 }
 
 // ── SUPERMARKET ENTRY ─────────────────────────────────
@@ -1644,13 +1865,19 @@ function renderMarket() {
       ` <span style="font-weight:800;color:#666;margin-left:6px">あと${remain}こ</span>`;
   } else {
     document.getElementById('reminder-bar').innerHTML = '📋 ' +
-      S.list.map(({product:p})=>`<span class="reminder-item ${coll.has(p.id)?'done':'pending'}">${p.emoji}${p.name}</span>`).join('');
+      S.list.map(({product:p})=>{
+        const icon = p.img ? `<img src="${p.img}" style="width:1.2em;height:1.2em;object-fit:contain;vertical-align:middle">` : p.emoji;
+        return `<span class="reminder-item ${coll.has(p.id)?'done':'pending'}">${icon}${p.name}</span>`;
+      }).join('');
   }
   // grid — no highlighting for needed items
   document.getElementById('market-grid').innerHTML = S.marketItems.map(p=>{
     const done = coll.has(p.id);
+    const icon = done ? '✅'
+      : p.img ? `<img src="${p.img}" style="width:52px;height:52px;object-fit:contain">`
+      : p.emoji;
     return `<div class="market-item ${done?'collected':''}" id="mi-${p.id}" onclick="collectItem('${p.id}')">
-      <div class="${done?'collected-check':'market-emoji'}">${done?'✅':p.emoji}</div>
+      <div class="${done?'collected-check':'market-emoji'}">${icon}</div>
       <div class="market-name">${p.name}</div>
       <div class="market-price">${yen(p.price)}</div>
     </div>`;
@@ -1884,6 +2111,12 @@ function taShowResult() {
 function showResult(ok, entered) {
   // ストーリーモード：正解したら進行を更新
   if (S.storyMode && ok) {
+    // ちょうかんたん：一度に全食材→即完成
+    if (STORY.storyMode === 'veryeasy') {
+      showStoryComplete();
+      return;
+    }
+    // てんごく：1食材ずつ進行
     const ingId = STORY.recipe.ingredients.find(id => !STORY.collectedIds.includes(id));
     STORY.collectedIds.push(ingId);
     saveHeavenStory({ recipeId: STORY.recipe.id, collectedIds: STORY.collectedIds });

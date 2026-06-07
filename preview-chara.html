@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>キャラクタープレビュー</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'M PLUS Rounded 1c','Hiragino Maru Gothic Pro',sans-serif;
+  background: #FFF3E0; display: flex; justify-content: center; min-height: 100vh;
+}
+#app { width: 100%; max-width: 480px; min-height: 100vh; background: white; overflow-x: hidden; }
+.screen { display: none; flex-direction: column; min-height: 100vh; padding: 20px; }
+.screen.active { display: flex; }
+
+.btn {
+  background: #FF6B35; color: white; border: none; border-radius: 50px;
+  padding: 15px 30px; font-size: 1.1em; font-weight: 800; font-family: inherit;
+  cursor: pointer; box-shadow: 0 5px 0 #CC4400;
+  transition: transform .1s, box-shadow .1s; user-select: none;
+}
+.btn:active { transform: translateY(5px); box-shadow: none; }
+.btn-blue  { background: #4ECDC4; box-shadow: 0 5px 0 #2BA39A; }
+.btn-green { background: #56C870; box-shadow: 0 5px 0 #3A9E52; }
+.btn-gray  { background: #AAAAAA; box-shadow: 0 5px 0 #888; }
+.w-full { width: 100%; }
+
+/* ── キャラクター選択 ── */
+#screen-select {
+  background: linear-gradient(160deg, #FFD93D, #FF6B35);
+  align-items: center; justify-content: center; text-align: center; gap: 10px;
+}
+#screen-select h2 { color: white; font-size: 1.8em; font-weight: 800; text-shadow: 2px 3px 0 rgba(0,0,0,.15); }
+#screen-select p  { color: rgba(255,255,255,.9); font-size: .95em; font-weight: 700; margin-bottom: 10px; }
+.chara-row { display: flex; gap: 20px; justify-content: center; margin: 10px 0; }
+.chara-card {
+  background: rgba(255,255,255,.25); border-radius: 24px; padding: 16px 20px;
+  cursor: pointer; border: 4px solid transparent;
+  transition: transform .15s, border-color .15s;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.chara-card:hover  { transform: scale(1.05); border-color: white; }
+.chara-card.selected { border-color: white; background: rgba(255,255,255,.45); transform: scale(1.05); }
+.chara-card img { width: 120px; height: 180px; object-fit: contain; }
+.chara-label { color: white; font-size: 1em; font-weight: 800; }
+
+/* ── 名前入力 ── */
+#screen-name {
+  background: linear-gradient(160deg, #FFD93D, #FF6B35);
+  align-items: center; justify-content: center; gap: 16px; text-align: center;
+}
+.name-card {
+  background: white; border-radius: 24px; padding: 28px 24px;
+  width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,.2);
+}
+.name-chara-preview {
+  display: flex; align-items: flex-end; justify-content: center;
+  margin-bottom: 16px; gap: 16px;
+}
+.name-chara-preview img { width: 90px; height: 135px; object-fit: contain; }
+.speech-bubble {
+  background: #FFF3E0; border-radius: 16px; padding: 10px 14px;
+  font-size: .9em; font-weight: 700; color: #555; position: relative;
+  max-width: 160px; text-align: left; line-height: 1.6;
+}
+.speech-bubble::before {
+  content: ''; position: absolute; left: -10px; top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid transparent; border-right-color: #FFF3E0;
+}
+.name-title { font-size: 1.1em; font-weight: 800; color: #555; margin-bottom: 10px; }
+.name-input {
+  width: 100%; border: 3px solid #FFD93D; border-radius: 16px;
+  padding: 14px 16px; font-size: 1.4em; font-weight: 800;
+  font-family: inherit; text-align: center; color: #333;
+  outline: none; transition: border-color .2s;
+}
+.name-input:focus { border-color: #FF6B35; }
+.name-hint { font-size: .8em; color: #AAA; margin-top: 6px; }
+
+/* ── ゲーム中キャラ吹き出し ── */
+#screen-ingame { background: #F0F9FF; }
+.ingame-header {
+  background: linear-gradient(135deg, #4ECDC4, #3AAFA6);
+  margin: -20px -20px 20px; padding: 20px; color: white; text-align: center;
+}
+.ingame-header h2 { font-size: 1.4em; font-weight: 800; }
+.chara-bubble-wrap {
+  display: flex; align-items: flex-end; gap: 12px; margin-bottom: 20px;
+}
+.chara-bubble-wrap img { width: 72px; height: 72px; object-fit: contain; flex-shrink: 0; }
+.bubble {
+  background: white; border-radius: 16px; padding: 12px 16px;
+  font-size: .95em; font-weight: 700; color: #333; line-height: 1.6;
+  box-shadow: 0 4px 14px rgba(0,0,0,.1); position: relative; flex: 1;
+}
+.bubble::before {
+  content: ''; position: absolute; left: -10px; bottom: 16px;
+  border: 8px solid transparent; border-right-color: white;
+}
+.bubble.happy { border: 3px solid #56C870; }
+.bubble.sad   { border: 3px solid #FFCCBC; }
+.scene-label { font-size: .8em; color: #AAA; font-weight: 700; margin: 14px 0 6px; }
+
+/* ── レジ・おかあさん ── */
+#screen-scenes { background: #FBE9E7; }
+.scene-section { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+.scene-section h3 { font-size: 1em; font-weight: 800; color: #555; margin-bottom: 12px; }
+.staff-row { display: flex; align-items: flex-end; gap: 12px; }
+.staff-row img { width: 80px; height: 80px; object-fit: contain; }
+.mom-row   { display: flex; align-items: flex-end; gap: 12px; }
+.mom-row img { width: 80px; height: 80px; object-fit: contain; }
+
+/* nav */
+.nav { display: flex; gap: 8px; padding: 12px 20px; background: white; border-top: 2px solid #EEE; position: sticky; bottom: 0; }
+.nav button { flex: 1; font-size: .78em; padding: 10px 6px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- キャラクター選択 -->
+<div id="screen-select" class="screen active">
+  <h2>🛒 おかいものゲーム</h2>
+  <p>だれで　あそぶ？</p>
+  <div class="chara-row">
+    <div class="chara-card" id="card-boy" onclick="selectChara('boy')">
+      <img src="chara_boy_full.png" alt="男の子">
+      <div class="chara-label">おとこのこ</div>
+    </div>
+    <div class="chara-card" id="card-girl" onclick="selectChara('girl')">
+      <img src="chara_girl_full.png" alt="女の子">
+      <div class="chara-label">おんなのこ</div>
+    </div>
+  </div>
+  <button class="btn btn-blue w-full" onclick="goName()" style="max-width:260px">つぎへ →</button>
+</div>
+
+<!-- 名前入力 -->
+<div id="screen-name" class="screen">
+  <div class="name-card">
+    <div class="name-chara-preview">
+      <img id="name-chara-img" src="chara_boy_full.png" alt="">
+      <div class="speech-bubble">なまえを<br>おしえてね！</div>
+    </div>
+    <div class="name-title">なまえをいれてね</div>
+    <input class="name-input" id="name-input" type="text" maxlength="6" placeholder="なまえ">
+    <div class="name-hint">さいだい6もじ（ひらがながおすすめ）</div>
+  </div>
+  <button class="btn btn-green w-full" onclick="goIngame()" style="max-width:260px">はじめる！ 🎮</button>
+  <button class="btn btn-gray w-full" onclick="showScreen('screen-select')" style="max-width:260px;margin-top:4px">もどる</button>
+</div>
+
+<!-- ゲーム中のキャラ表示 -->
+<div id="screen-ingame" class="screen">
+  <div class="ingame-header"><h2>📋 きょうのおかいもの</h2></div>
+
+  <div class="scene-label">▼ ふつう（待機）</div>
+  <div class="chara-bubble-wrap">
+    <img id="ig-normal" src="chara_boy_normal.png" alt="">
+    <div class="bubble"><span id="ig-name">けんた</span>、これを<br>かってきてね！</div>
+  </div>
+
+  <div class="scene-label">▼ よろこび（正解）</div>
+  <div class="chara-bubble-wrap">
+    <img id="ig-happy" src="chara_boy_happy.png" alt="">
+    <div class="bubble happy">やったー！<br>さすが<span id="ig-name2">けんた</span>！🎉</div>
+  </div>
+
+  <div class="scene-label">▼ はげまし（不正解）</div>
+  <div class="chara-bubble-wrap">
+    <img id="ig-sad" src="chara_boy_sad.png" alt="">
+    <div class="bubble sad">おしい！<br>もういちど<br>チャレンジ！💪</div>
+  </div>
+
+  <div class="nav">
+    <button class="btn btn-gray" onclick="showScreen('screen-name')">← もどる</button>
+    <button class="btn btn-blue" onclick="showScreen('screen-scenes')">レジ・おかあさん →</button>
+  </div>
+</div>
+
+<!-- レジ・おかあさん -->
+<div id="screen-scenes" class="screen">
+  <div class="ingame-header" style="background:linear-gradient(135deg,#E53935,#B71C1C)"><h2>🧾 レジ・その他</h2></div>
+
+  <div class="scene-section">
+    <h3>🏪 レジの店員さん（ふつう）</h3>
+    <div class="staff-row">
+      <img src="chara_staff_normal.png" alt="">
+      <div class="bubble">いらっしゃいませ！<br>おかねを<br>えらんでね😊</div>
+    </div>
+  </div>
+
+  <div class="scene-section">
+    <h3>🏪 レジの店員さん（正解）</h3>
+    <div class="staff-row">
+      <img src="chara_staff_happy.png" alt="">
+      <div class="bubble happy">ありがとう<br>ございました！<br>またきてね🎉</div>
+    </div>
+  </div>
+
+  <div class="scene-section">
+    <h3>👩 おかあさん（てんごくモード）</h3>
+    <div class="mom-row">
+      <img src="chara_mom_happy.png" alt="">
+      <div class="bubble">おかあさんが<br>おかねを<br>いれてくれたよ💕</div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="btn btn-gray" onclick="showScreen('screen-ingame')">← もどる</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+let selectedChara = 'boy';
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function selectChara(type) {
+  selectedChara = type;
+  document.getElementById('card-boy').classList.toggle('selected', type === 'boy');
+  document.getElementById('card-girl').classList.toggle('selected', type === 'girl');
+}
+
+function goName() {
+  document.getElementById('name-chara-img').src = `chara_${selectedChara}_full.png`;
+  showScreen('screen-name');
+}
+
+function goIngame() {
+  const name = document.getElementById('name-input').value.trim() || (selectedChara === 'boy' ? 'けんた' : 'はな');
+  ['ig-name','ig-name2'].forEach(id => document.getElementById(id).textContent = name);
+  ['ig-normal','ig-happy','ig-sad'].forEach((id, i) => {
+    const suffix = ['normal','happy','sad'][i];
+    document.getElementById(id).src = `chara_${selectedChara}_${suffix}.png`;
+  });
+  showScreen('screen-ingame');
+}
+
+// 初期選択
+selectChara('boy');
+</script>
+</body>
+</html>
