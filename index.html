@@ -1037,6 +1037,18 @@ window.addEventListener('DOMContentLoaded', () => {
     selectChara('boy');
     showScreen('screen-chara-select');
   }
+  // 画像プリロード（バックグラウンドで全画像を先読み）
+  setTimeout(() => {
+    const imgs = [
+      ...PRODUCTS.filter(p=>p.img).map(p=>p.img),
+      ...RECIPES.map(r=>r.img),
+      'chara_boy_normal.png','chara_boy_happy.png','chara_boy_sad.png','chara_boy_full.png',
+      'chara_girl_normal.png','chara_girl_happy.png','chara_girl_sad.png','chara_girl_full.png',
+      'chara_mom_normal.png','chara_mom_happy.png','chara_mom_sad.png',
+      'chara_staff_normal.png','chara_staff_happy.png','chara_staff_sad.png',
+    ];
+    imgs.forEach(src => { const i = new Image(); i.src = src; });
+  }, 1000);
 });
 
 // ── DATA ──────────────────────────────────────────────
