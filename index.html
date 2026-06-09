@@ -78,13 +78,44 @@ body {
 /* TITLE */
 #screen-title {
   background: linear-gradient(160deg,#FFD93D,#FF6B35);
-  align-items: center; justify-content: center; text-align: center; gap: 16px;
+  align-items: center; justify-content: center; text-align: center; gap: 12px;
 }
 .title-cart { font-size: 90px; animation: bounce 1.2s ease-in-out infinite; display: block; }
 @keyframes bounce { 0%,100%{transform:translateY(0) rotate(-5deg);} 50%{transform:translateY(-18px) rotate(5deg);} }
 #screen-title h1 { color: white; font-size: 2.4em; font-weight: 800; text-shadow: 3px 4px 0 rgba(0,0,0,.15); }
 #screen-title .subtitle { color: rgba(255,255,255,.9); font-size: 1em; font-weight: 700; }
+
+/* カテゴリ選択タブ */
+.subject-tabs { display: flex; gap: 8px; width: 100%; max-width: 320px; }
+.subject-tab {
+  flex: 1; padding: 14px 8px; border-radius: 18px; border: 3px solid rgba(255,255,255,.5);
+  background: rgba(255,255,255,.2); color: white; font-family: inherit;
+  font-size: 1.1em; font-weight: 800; cursor: pointer;
+  transition: background .2s, border-color .2s, transform .1s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.subject-tab .tab-icon { font-size: 1.8em; }
+.subject-tab .tab-label { font-size: .8em; opacity: .9; }
+.subject-tab.active {
+  background: rgba(255,255,255,.45); border-color: white;
+  transform: scale(1.04);
+}
+.subject-tab:active { transform: scale(.96); }
+
+/* カテゴリパネル */
+.subject-panel { display: none; width: 100%; }
+.subject-panel.active { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
 .difficulty-btns { display: flex; gap: 10px; flex-direction: column; width: 100%; max-width: 270px; }
+
+/* 国語準備中 */
+.kokugo-coming {
+  background: rgba(255,255,255,.25); border-radius: 20px;
+  padding: 28px 24px; width: 100%; max-width: 270px; text-align: center;
+}
+.kokugo-coming .coming-icon { font-size: 3em; margin-bottom: 8px; }
+.kokugo-coming .coming-title { color: white; font-size: 1.3em; font-weight: 800; margin-bottom: 6px; }
+.kokugo-coming .coming-desc { color: rgba(255,255,255,.9); font-size: .88em; font-weight: 700; line-height: 1.7; }
 
 /* SECTION HEADERS */
 .section-header { margin: -20px -20px 20px; padding: 20px; color: white; text-align: center; }
@@ -676,19 +707,49 @@ body {
     </div>
   </div>
   <h1>おかいものゲーム</h1>
-  <p class="subtitle" id="title-greeting">おかねのつかいかたを　おぼえよう！</p>
-  <div class="difficulty-btns">
-    <button class="btn btn-gray"   onclick="showScreen('screen-chara-select')" style="font-size:.9em;padding:10px 20px">👤 キャラをかえる</button>
-    <div style="margin-top:8px"></div>
-    <button class="btn btn-sky"    onclick="startGame('heaven')">☁️ てんごく</button>
-    <button class="btn btn-pink"   onclick="startGame('veryeasy')">🌸 ちょうかんたん</button>
-    <button class="btn btn-green"  onclick="startGame('easy')">かんたん</button>
-    <button class="btn btn-blue"   onclick="startGame('normal')">ふつう</button>
-    <button class="btn btn-purple" onclick="startGame('hard')">むずかしい</button>
-    <button class="btn btn-red"    onclick="startGame('super')">ちょうむずかしい 🔥</button>
-    <button class="btn btn-dark"   onclick="startGame('hell')">👹 じごく</button>
-    <div style="margin-top:8px"></div>
-    <button class="btn btn-yellow" onclick="startTimeAttack()">⚡ タイムアタック</button>
+  <button class="btn btn-gray" onclick="showScreen('screen-chara-select')" style="font-size:.9em;padding:10px 20px">👤 キャラをかえる</button>
+  <p class="subtitle" id="title-greeting">なにをおぼえる？</p>
+
+  <!-- カテゴリ選択タブ -->
+  <div class="subject-tabs">
+    <button class="subject-tab active" id="tab-math" onclick="switchSubject('math')">
+      <span class="tab-icon">🔢</span>
+      <span>さんすう</span>
+      <span class="tab-label">おかねの　けいさん</span>
+    </button>
+    <button class="subject-tab" id="tab-kokugo" onclick="switchSubject('kokugo')">
+      <span class="tab-icon">📖</span>
+      <span>こくご</span>
+      <span class="tab-label">かんじを　おぼえる</span>
+    </button>
+  </div>
+
+  <!-- 算数パネル -->
+  <div class="subject-panel active" id="panel-math">
+    <div class="difficulty-btns">
+      <button class="btn btn-sky"    onclick="startGame('heaven')">☁️ てんごく</button>
+      <button class="btn btn-pink"   onclick="startGame('veryeasy')">🌸 ちょうかんたん</button>
+      <button class="btn btn-green"  onclick="startGame('easy')">かんたん</button>
+      <button class="btn btn-blue"   onclick="startGame('normal')">ふつう</button>
+      <button class="btn btn-purple" onclick="startGame('hard')">むずかしい</button>
+      <button class="btn btn-red"    onclick="startGame('super')">ちょうむずかしい 🔥</button>
+      <button class="btn btn-dark"   onclick="startGame('hell')">👹 じごく</button>
+      <div style="margin-top:4px"></div>
+      <button class="btn btn-yellow" onclick="startTimeAttack()">⚡ タイムアタック</button>
+    </div>
+  </div>
+
+  <!-- 国語パネル -->
+  <div class="subject-panel" id="panel-kokugo">
+    <div class="kokugo-coming">
+      <div class="coming-icon">📖</div>
+      <div class="coming-title">こくごモード</div>
+      <div class="coming-desc">
+        かんじや　ひらがなを<br>
+        たのしく　おぼえよう！<br><br>
+        🚧 ただいま　じゅんびちゅう 🚧
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1004,10 +1065,17 @@ function saveProfie() {
 function updateCharaUI() {
   // タイトルあいさつ
   const greet = document.getElementById('title-greeting');
-  if (greet) greet.textContent = `${PROFILE.name}、がんばろう！`;
+  if (greet) greet.textContent = PROFILE.name ? `${PROFILE.name}、なにをおぼえる？` : 'なにをおぼえる？';
   // キャラ選択のハイライト
   document.getElementById('card-boy').classList.toggle('selected', PROFILE.chara === 'boy');
   document.getElementById('card-girl').classList.toggle('selected', PROFILE.chara === 'girl');
+}
+
+function switchSubject(subject) {
+  ['math','kokugo'].forEach(s => {
+    document.getElementById(`tab-${s}`).classList.toggle('active', s === subject);
+    document.getElementById(`panel-${s}`).classList.toggle('active', s === subject);
+  });
 }
 
 function charaImg(mood) {
